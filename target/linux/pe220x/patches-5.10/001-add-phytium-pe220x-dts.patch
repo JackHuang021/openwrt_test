@@ -1,0 +1,7773 @@
+diff --git a/arch/arm64/boot/dts/Makefile b/arch/arm64/boot/dts/Makefile
+index 9b1170658..2900f07a2 100644
+--- a/arch/arm64/boot/dts/Makefile
++++ b/arch/arm64/boot/dts/Makefile
+@@ -19,6 +19,7 @@ subdir-y += marvell
+ subdir-y += mediatek
+ subdir-y += microchip
+ subdir-y += nvidia
++subdir-y += phytium
+ subdir-y += qcom
+ subdir-y += realtek
+ subdir-y += renesas
+diff --git a/arch/arm64/boot/dts/phytium/Makefile b/arch/arm64/boot/dts/phytium/Makefile
+new file mode 100644
+index 000000000..d16bac218
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/Makefile
+@@ -0,0 +1,32 @@
++# SPDX-License-Identifier: GPL-2.0
++
++## pe220x test-a/b/c development board series.
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000q-test-a-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000q-test-b-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000q-test-c-board.dtb
++
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000d-test-a-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000d-test-b-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000d-test-c-board.dtb
++
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000s-test-a-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000s-test-b-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000s-test-c-board.dtb
++
++## pe220x general demo development board series.
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000q-demo-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000d-demo-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000s-demo-board.dtb
++
++## pe220x specific industry development board series.
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000q-miniitx-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000d-miniitx-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000q-vpx-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000q-edu-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000q-come-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000d-power-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000q-hanwei-board.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += phytiumpi_firefly.dtb
++dtb-$(CONFIG_ARCH_PHYTIUM) += e2000d-chillipi-edu-board.dtb
++
++dtb-$(CONFIG_ARCH_PHYTIUM) +=  ps2316-devboard-16c-dsk.dtb
+diff --git a/arch/arm64/boot/dts/phytium/e2000d-chillipi-edu-board.dts b/arch/arm64/boot/dts/phytium/e2000d-chillipi-edu-board.dts
+new file mode 100644
+index 000000000..28a1f0d47
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000d-chillipi-edu-board.dts
+@@ -0,0 +1,339 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2202 chillipi education board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2202.dtsi"
++#include "dt-bindings/gpio/gpio.h"
++
++
++/{
++	model = "Pe2202 CHILLIPI EDUCATION BOARD";
++	compatible = "phytium,pe2202";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x0 0x80000000>;
++	};
++
++	sound_card: sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,name = "phytium,pe220x-i2s-audio";
++		simple-audio-card,pin-switches = "mic-in";
++		simple-audio-card,widgets = "Microphone","mic-in";
++		simple-audio-card,routing = "MIC2","mic-in";
++		simple-audio-card,cpu {
++			sound-dai = <&i2s0>;
++		};
++		simple-audio-card,codec{
++			sound-dai = <&codec0>;
++		};
++	};
++};
++
++&soc {
++	mio6: i2c@28020000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28020000 0x0 0x1000>;
++		interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		oled@3c {
++			compatible = "SinoWealth,sh1106";
++			reg = <0x3c>;
++		};
++
++		pcf8591@48 {
++			compatible = "philips,pcf8591";
++			reg = <0x48>;
++		};
++	};
++	
++	mio9: i2c@28026000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28026000 0x0 0x1000>;
++		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "disabled";
++
++		/* localized chillipi education board use this rtc device */
++		rtc@32 {
++			compatible = "wave,sd3068";
++			reg = <0x32>;
++			status = "disabled";
++		};
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++			status = "disabled";
++		};
++	};
++
++	mio14: i2c@28030000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28030000 0x0 0x1000>;
++		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "disabled";
++
++		codec0: es8336@10 {
++			det-gpios = <&gpio2 5  GPIO_ACTIVE_LOW>;
++			sel-gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
++			#sound-dai-cells = <0>;
++			compatible = "everest,es8336";
++			reg = <0x10>;
++			status = "disabled";
++		};
++	};
++};
++
++&gpio0 {
++	status = "okay";
++};
++
++&gpio1 {
++	status = "okay";
++};
++
++&gpio2 {
++	status = "okay";
++};
++
++&gpio3 {
++	status = "okay";
++};
++
++&gpio4 {
++	interrupt-controller;
++	#interrupt-cells = <2>;
++	status = "okay";
++};
++
++&gpio5 {
++	status = "okay";
++};
++
++&watchdog0 {
++	status = "okay";
++};
++
++&watchdog1 {
++	status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "host";
++	status = "disabled";
++};
++
++&usb2_2 {
++	dr_mode = "host";
++	status = "disabled";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++/*
++ * In chillipi education board, M.2 interface may insert two types of disks: PCIE (nvme protocol) or SATA (ahci protocol),
++ * so here enable 'sata0' node by default to correspond to the sata drive case. Pin multiplexing exists
++ * in PCIE2 and SATA0, when used as a boot disk, the BIOS can automatically recognize these two conditions.
++ */
++&sata0 {
++	status = "disabled";
++};
++
++&sata1 {
++	status = "disabled";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "okay";
++
++	ILI9488@0 {
++		compatible = "ilitek,ili9488";
++		reg = <0>;
++		spi-max-frequency = <50000000>;
++
++		rotate = <0>;
++		fps = <30>;
++		buswidth = <8>;
++		regwidth = <8>;
++		bgr;
++		reset-gpios = <&gpio0 15 GPIO_ACTIVE_LOW>;
++		dc-gpios = <&gpio3 2 GPIO_ACTIVE_LOW>;
++		//cs-gpios = <&gpio3 2 GPIO_ACTIVE_LOW>;
++
++		//backlight = <&backlight>;
++		debug = <0>;
++	};
++
++	ADS7843@1 {
++		compatible = "ti,ads7843";
++		spi-max-frequency = <1000000>;
++		reg = <1>;
++		//cs-gpios = <&gpio4 10 GPIO_ACTIVE_LOW>;
++		interrupt-parent = <&gpio4>;
++		interrupts = <12 0>;
++		pendown-gpio = <&gpio4 12 0>;
++
++		ti,x-min = /bits/ 16 <0>;
++		//ti,x-max = /bits/ 16 <8000>;
++		ti,x-max = /bits/ 16 <3200>;
++		ti,y-min = /bits/ 16 <0>;
++		//ti,y-max = /bits/ 16 <4800>;
++		ti,y-max = /bits/ 16 <4800>;
++		ti,x-plate-ohms = /bits/ 16 <40>;
++		ti,pressure-max = /bits/ 16 <255>;
++
++		wakeup-source;
++	};
++};
++
++&spi2 {
++	global-cs = <1>;
++	status = "okay";
++
++	mpu6500@0 {
++		compatible = "InvenSense,mpu6500";
++		spi-max-frequency = <500000>;
++		reg = <0>;
++		spi-cpol;
++		spi-cpha;
++	};
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&mmc0 {
++	bus-width = <0x00000008>;
++	max-frequency = <100000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	mmc-hs200-1_8v;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "okay";
++};
++
++&mmc1 {
++	bus-width = <0x00000004>;
++	max-frequency = <50000000>;
++	cap-sdio-irq;
++	cap-sd-highspeed;
++	no-sdio;
++	no-mmc;
++	status = "okay";
++};
++
++&i2s0 {
++	#sound-dai-cells = <0>;
++	status = "okay";
++};
++
++&dc0 {
++	pipe_mask = /bits/ 8 <0x2>;
++	edp_mask = /bits/ 8 <0x0>;
++	status = "okay";
++};
++
++&i2s_dp1 {
++	status = "okay";
++};
++
++&pmdk_dp {
++	num-dp = <1>;
++	dp-mask = /bits/ 8 <0x2>;
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
++
++&pwm0 {
++	phytium,db = <0 0 0 1000 1000 0>;
++	status = "okay";
++};
++
++&pwm1 {
++	phytium,db = <0 0 0 1000 1000 0>;
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000d-demo-board.dts b/arch/arm64/boot/dts/phytium/e2000d-demo-board.dts
+new file mode 100644
+index 000000000..63f54c4cd
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000d-demo-board.dts
+@@ -0,0 +1,269 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2202 demo board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2202.dtsi"
++#include "dt-bindings/gpio/gpio.h"
++#include "dt-bindings/bus/phytium-local-bus.h"
++
++
++/{
++	model = "Pe2202 DEMO DDR4";
++	compatible = "phytium,pe2202";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x0 0x80000000>;
++	};
++
++	sound_card: sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,name = "phytium,pe220x-i2s-audio";
++		simple-audio-card,pin-switches = "mic-in";
++		simple-audio-card,widgets = "Microphone","mic-in";
++		simple-audio-card,routing = "MIC2","mic-in";
++		simple-audio-card,cpu {
++			sound-dai = <&i2s0>;
++		};
++		simple-audio-card,codec{
++			sound-dai = <&codec0>;
++		};
++	};
++};
++
++&soc {
++	mio9: i2c@28026000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28026000 0x0 0x1000>;
++		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		/* localized demo board use this rtc device */
++		rtc@32 {
++			compatible = "wave,sd3068";
++			reg = <0x32>;
++		};
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++
++	mio14: i2c@28030000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28030000 0x0 0x1000>;
++		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		codec0: es8336@10 {
++			det-gpios = <&gpio2 5  GPIO_ACTIVE_LOW>;
++			sel-gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
++			#sound-dai-cells = <0>;
++			compatible = "everest,es8336";
++			reg = <0x10>;
++		};
++	};
++};
++
++#define NOR_TIM0 (NOR_TACSEX(4)|NOR_TEADCX(6)|NOR_TCESX(1)|NOR_TEAHCX(3))
++#define NOR_TIM1 (NOR_TACOX(0x3F)|NOR_TRADX(0x1F)|NOR_TSEQRADX(1))
++#define NOR_TIM2 (NOR_TCSX(0xF)|NOR_TCHX(0xF)|NOR_TWPHX(4)|NOR_TWPX(0xF))
++
++#define GPCM_TIM0 (GPCM_TACSEX(1)|GPCM_TEADCX(4)|GPCM_TEAHCX(1))
++#define GPCM_TIM1 (GPCM_TACOX(4)|GPCM_TAADX(1)|GPCM_TRADX(5))
++#define GPCM_TIM2 (GPCM_TCSX(2)|GPCM_TCHX(1)|GPCM_TWPX(6))
++
++&lbc {
++	device_list = < 0x0 LBC_NOR_CM NOR_TIM0 NOR_TIM1 NOR_TIM2
++				    /*0x0 LBC_GPCM GPCM_TIM0 GPCM_TIM1 GPCM_TIM2 */>;
++	status = "okay";
++	lbc_nor: lbc_nor@0 {
++		compatible = "cfi-flash";
++		reg = <0x0 0x0 0x1000000>;
++		bank-width = <2>;
++		little-endian;
++		status = "okay";
++	};
++	lbc_sram: lbc_sram@1 {
++		compatible = "mmio-sram";
++		reg = <0x0 0x0 0x1000000>;
++		status = "disabled";
++	};
++};
++
++&gpio0 {
++    status = "okay";
++};
++
++&gpio1 {
++    status = "okay";
++};
++
++&gpio2 {
++    status = "okay";
++};
++
++&gpio3 {
++    status = "okay";
++};
++
++&gpio4 {
++    status = "okay";
++};
++
++&gpio5 {
++    status = "okay";
++};
++
++&watchdog0 {
++    status = "okay";
++};
++
++&watchdog1 {
++    status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++/*
++ * In demo board, M.2 interface may insert two types of disks: PCIE (nvme protocol) or SATA (ahci protocol),
++ * so here enable 'sata0' node by default to correspond to the sata drive case. Pin multiplexing exists
++ * in PCIE2 and SATA0, when used as a boot disk, the BIOS can automatically recognize these two conditions.
++ */
++&sata0 {
++	status = "okay";
++};
++
++&sata1 {
++	status = "okay";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi2 {
++	global-cs = <1>;
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&mmc0 {
++	bus-width = <0x00000008>;
++	max-frequency = <100000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	mmc-hs200-1_8v;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "okay";
++};
++
++&mmc1 {
++	bus-width = <0x00000004>;
++	max-frequency = <50000000>;
++	cap-sdio-irq;
++	cap-sd-highspeed;
++	no-sdio;
++	no-mmc;
++	status = "okay";
++};
++
++&i2s0 {
++	#sound-dai-cells = <0>;
++	status = "okay";
++};
++
++&dc0 {
++	pipe_mask = /bits/ 8 <0x2>;
++	edp_mask = /bits/ 8 <0x0>;
++	status = "okay";
++};
++
++&i2s_dp1 {
++	status = "okay";
++};
++
++&pmdk_dp {
++    num-dp = <1>;
++    dp-mask = /bits/ 8 <0x2>;
++    status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000d-miniitx-board.dts b/arch/arm64/boot/dts/phytium/e2000d-miniitx-board.dts
+new file mode 100644
+index 000000000..e85d27a82
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000d-miniitx-board.dts
+@@ -0,0 +1,296 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2202 miniitx board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * Hongmin Qi <qihongmin@phytium.com.cn>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2202.dtsi"
++
++/{
++	model = "Pe2202 MINIITX Board";
++	compatible = "phytium,pe2202";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x1 0x00000000>;
++	};
++
++	sound_card: sound {
++        compatible = "simple-audio-card";
++        simple-audio-card,format = "i2s";
++        simple-audio-card,name = "phytium,pe220x-i2s-audio";
++        simple-audio-card,cpu {
++            sound-dai = <&i2s0>;
++        };
++        simple-audio-card,codec {
++            sound-dai = <&codec0>;
++        };
++    };
++};
++
++&soc {
++	mio0: uart@28014000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28014000 0x0 0x1000>;
++		interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "disabled";
++	};
++
++	mio1: uart@28016000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28016000 0x0 0x1000>;
++		interrupts = <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "disabled";
++	};
++
++	mio9: i2c@28026000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28026000 0x0 0x1000>;
++		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++
++	mio6: uart@28020000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28020000 0x0 0x1000>;
++		interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio7: uart@28022000  {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28022000 0x0 0x1000>;
++		interrupts = <GIC_SPI 99 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio14: i2c@28030000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28030000 0x0 0x1000>;
++		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		codec0: es8336@10 {
++			det-gpios = <&gpio2 5 0>;
++			sel-gpios = <&gpio2 6 0>;
++			#sound-dai-cells = <0>;
++			compatible = "everest,es8336";
++			reg = <0x10>;
++			mic-src = [20];
++		};
++	};
++
++	mio15: uart@28032000  {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28032000 0x0 0x1000>;
++		interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "host";
++	status = "disabled";
++};
++
++&usb2_2 {
++	dr_mode = "host";
++	status = "disabled";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "disabled";
++};
++
++&macb2 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb3 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "disabled";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "disabled";
++
++	flash: w25q128@0 {
++        compatible = "winbond,w25q128", "jedec,spi-nor";
++        spi-tx-bus-width = <1>;
++        spi-rx-bus-width = <1>;
++        spi-max-frequency = <12000000>;
++        reg = <0x00>;
++        status = "disabled";
++    };
++};
++
++&spi2 {
++	global-cs = <1>;
++	status = "disabled";
++};
++
++&spi3 {
++	global-cs = <1>;
++	status = "disabled";
++};
++
++&mmc0 {
++	status = "okay";
++	bus-width = <0x4>;
++	max-frequency = <50000000>;
++	cap-sdio-irq;
++	cap-sd-highspeed;
++	no-mmc;
++};
++
++&mmc1 {
++    status = "okay";
++};
++
++&uart0 {
++    status = "okay";
++};
++
++&uart1 {
++    status = "okay";
++};
++
++&uart2 {
++    status = "okay";
++};
++
++&uart3 {
++    status = "okay";
++};
++
++&gpio1 {
++    status = "okay";
++};
++
++&gpio2 {
++    status = "okay";
++};
++
++&gpio3 {
++    status = "okay";
++};
++
++&gpio4 {
++    status = "okay";
++};
++
++&sata0 {
++    status = "okay";
++};
++
++&sata1 {
++    status = "okay";
++};
++
++&dc0 {
++    status = "okay";
++    pipe_mask = [02];
++    edp_mask = [00];
++};
++
++&i2s0 {
++    #sound-dai-cells = <0>;
++    dai-name = "phytium-i2s-lsd";
++    status = "okay";
++};
++
++&pwm1 {
++	phytium,db = <0 0 0 1000 1000 0>;
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000d-power-board.dts b/arch/arm64/boot/dts/phytium/e2000d-power-board.dts
+new file mode 100755
+index 000000000..afefcc7e7
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000d-power-board.dts
+@@ -0,0 +1,243 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2202 power board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * Hongmin Qi <qihongmin@phytium.com.cn>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2202.dtsi"
++
++/{
++	model = "Pe2202S power Board";
++	compatible = "phytium,pe2202";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x1 0x00000000>;
++	};
++};
++
++&soc {
++	mio9: i2c@28026000 {
++        compatible = "phytium,i2c";
++        reg = <0x0 0x28026000 0x0 0x1000>;
++        interrupts = <0x0 0x65 0x4>;
++        clocks = <&sysclk_50mhz>;
++        #address-cells = <0x1>;
++        #size-cells = <0x0>;
++        status = "okay";
++
++        rtc@68 {
++            compatible = "dallas,ds1339";
++            reg = <0x68>;
++        };
++    };
++
++	mio6: i2c@28020000 {
++        status = "okay";
++        compatible = "phytium,i2c";
++        reg = <0x0 0x28020000 0x0 0x1000>;
++        interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
++        clocks = <&sysclk_50mhz>;
++        #address-cells = <0x1>;
++        #size-cells = <0x0>;
++        eeprom@50 {
++            compatible = "atmel,24c02";
++            reg = <0x50>;
++            pagesize = <1>;
++        };
++    };
++
++	mio10: uart@28028000 {
++        compatible = "arm,pl011", "arm,primecell";
++        reg = <0x0 0x28028000 0x0 0x1000>;
++        interrupts = <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>;
++        clocks = <&sysclk_50mhz &sysclk_50mhz>;
++        clock-names = "uartclk", "apb_pclk";
++        status = "okay";
++    };
++
++	mio11: uart@2802a000 {
++        compatible = "arm,pl011", "arm,primecell";
++        reg = <0x0 0x2802a000 0x0 0x1000>;
++        interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
++        clocks = <&sysclk_50mhz &sysclk_50mhz>;
++        clock-names = "uartclk", "apb_pclk";
++        status = "okay";
++    };
++
++	mio13: uart@2802e000 {
++        compatible = "arm,pl011", "arm,primecell";
++        reg = <0x0 0x2802e000 0x0 0x1000>;
++        interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>;
++        clocks = <&sysclk_50mhz &sysclk_50mhz>;
++        clock-names = "uartclk", "apb_pclk";
++        status = "okay";
++    };
++
++	mio14: uart@28030000 {
++        compatible = "arm,pl011", "arm,primecell";
++        reg = <0x0 0x28030000 0x0 0x1000>;
++		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
++        clocks = <&sysclk_50mhz &sysclk_50mhz>;
++        clock-names = "uartclk", "apb_pclk";
++        status = "okay";
++    };
++
++	mio15: uart@28032000 {
++        compatible = "arm,pl011", "arm,primecell";
++        reg = <0x0 0x28032000 0x0 0x1000>;
++        interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
++        clocks = <&sysclk_50mhz &sysclk_50mhz>;
++        clock-names = "uartclk", "apb_pclk";
++        status = "okay";
++    };
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb2 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb3 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "disabled";
++};
++
++&dc0 {
++	pipe_mask = [02];
++	edp_mask = [00];
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "disabled";
++};
++
++&mmc0 {
++	bus-width = <8>;
++	max-frequency = <50000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "okay";
++};
++
++&mmc1 {
++	status = "okay";
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&uart3 {
++	status = "okay";
++};
++
++
++&gpio0 {
++	status = "okay";
++};
++
++&gpio1 {
++	status = "okay";
++};
++
++&gpio2 {
++	status = "okay";
++};
++
++&gpio3 {
++	status = "okay";
++};
++
++&gpio4 {
++	status = "okay";
++};
++
++&gpio5 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000d-test-a-board.dts b/arch/arm64/boot/dts/phytium/e2000d-test-a-board.dts
+new file mode 100644
+index 000000000..b32c5aba7
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000d-test-a-board.dts
+@@ -0,0 +1,176 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2202 test board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2202.dtsi"
++
++/{
++	model = "Pe2202 TESTA DDR4 Board";
++	compatible = "phytium,pe2202";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x0 0x7a000000>;
++	};
++};
++
++&soc {
++	mio3: i2c@2801a000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x2801a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 95 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++/*
++ * This mac can be also used as rmii:
++ *   phy-mode = "rmii";
++ */
++&macb2 {
++	phy-mode = "rgmii";
++	use-mii;
++	status = "okay";
++};
++
++&dc0 {
++	pipe_mask = /bits/ 8 <0x3>;
++	edp_mask = /bits/ 8 <0x0>;
++	status = "okay";
++};
++
++&i2s_dp0 {
++	status = "okay";
++};
++
++&i2s_dp1 {
++	status = "okay";
++};
++
++&pmdk_dp{
++	num-dp = <2>;
++	dp-mask = /bits/ 8 <0x3>;
++	status = "okay";
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "okay";
++
++	flash: w25q128@0 {
++		compatible ="winbond,w25q128", "jedec,spi-nor";
++		spi-max-frequency = <12000000>;
++		reg = <0>;
++	};
++};
++
++&spi1 {
++	status = "okay";
++};
++
++&spi2 {
++	status = "okay";
++};
++
++&spi3 {
++	status = "okay";
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&uart3 {
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000d-test-b-board.dts b/arch/arm64/boot/dts/phytium/e2000d-test-b-board.dts
+new file mode 100644
+index 000000000..d90b981fb
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000d-test-b-board.dts
+@@ -0,0 +1,209 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2202 test board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2202.dtsi"
++
++/{
++	model = "Pe2202 TESTB DDR4 Board";
++	compatible = "phytium,pe2202";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x0 0x7a000000>;
++	};
++
++	sound_card: sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,name = "phytium,pe220x-i2s-audio";
++		simple-audio-card,cpu {
++			sound-dai = <&i2s0>;
++		};
++		simple-audio-card,codec{
++			sound-dai = <&codec0>;
++		};
++	};
++};
++
++&soc {
++	mio0: i2c@28014000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28014000 0x0 0x1000>;
++		interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++	};
++
++	mio8: i2c@28024000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28024000 0x0 0x1000>;
++		interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++
++	mio11: i2c@2802a000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x2802a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		codec0: es8388@10 {
++			#sound-dai-cells = <0>;
++			compatible = "everest,es8388";
++			reg = <0x10>;
++		};
++        };
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&sata0 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&dc0 {
++	pipe_mask = /bits/ 8 <0x1>;
++	edp_mask = /bits/ 8 <0x0>;
++	status = "okay";
++};
++
++&i2s_dp0 {
++	status = "okay";
++};
++
++&pmdk_dp{
++	num-dp = <1>;
++	dp-mask = /bits/ 8 <0x1>;
++	status = "okay";
++};
++/*
++ * This mac can be also used as:
++ *  phy-mode = "rgmii";
++ *  phy-mode = "rmii";
++ */
++&macb3 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&mmc0 {
++	bus-width = <0x00000008>;
++	max-frequency = <50000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "okay";
++};
++
++&mmc1 {
++	bus-width = <0x00000004>;
++	max-frequency = <50000000>;
++	cap-sdio-irq;
++	cap-sd-highspeed;
++	sd-uhs-sdr25;
++	no-mmc;
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&i2s0 {
++	#sound-dai-cells = <0>;
++	dai-name = "phytium-i2s-lsd";
++	status = "okay";
++};
++
++&sound_card {
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000d-test-c-board.dts b/arch/arm64/boot/dts/phytium/e2000d-test-c-board.dts
+new file mode 100644
+index 000000000..547eb4d34
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000d-test-c-board.dts
+@@ -0,0 +1,240 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2202 test board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2202.dtsi"
++
++/{
++	model = "Pe2202 TESTC DDR4 Board";
++	compatible = "phytium,pe2202";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x0 0x7a000000>;
++	};
++};
++
++&soc {
++	mio3: i2c@2801a000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x2801a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 95 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++
++	mio2: uart@28018000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28018000 0x0 0x1000>;
++		interrupts = <GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&sata1 {
++	status = "okay";
++};
++
++/*
++ * This mac can be also used as:
++ *  phy-mode = "rgmii";
++ *  phy-mode = "rmii";
++ */
++&macb2 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb3 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++/*
++ * A Keypad can be customized by users. For example,
++ * users can configure a 8*8 keypad:
++ * - keypad,num-rows = <8>;
++ * - keypad,num-columns = <8>;
++ * - keymap:
++ *   - The highest one byte represents the row
++ *   - The second byte represents the columns
++ *   - The lowest two bytes represent the key value
++ *
++ * Please refer to include/uapi/linux/input-event-codes.h
++ * for key-value definitions.
++ */
++&keypad {
++	keypad,num-rows = <4>;
++	keypad,num-columns = <4>;
++	linux,keymap = <0x00000012	/* KEY_E          */
++			0x00010013	/* KEY_R          */
++			0x00020014	/* KEY_T          */
++			0x00030066	/* KEY_HOME       */
++			0x01000020	/* KEY_D          */
++			0x01010021	/* KEY_F          */
++			0x01020022	/* KEY_G          */
++			0x010300e7	/* KEY_SEND       */
++			0x0200002d	/* KEY_X          */
++			0x0201002e	/* KEY_C          */
++			0x0202002f	/* KEY_V          */
++			0x0203006b	/* KEY_END        */
++			0x0300002c	/* KEY_Z          */
++			0x0301004e	/* KEY_KPLUS      */
++			0x03020030	/* KEY_B          */
++			0x0303003b>;	/* KEY_F1         */
++	status = "okay";
++};
++
++&hda0 {
++	status = "okay";
++};
++
++&kcs0 {
++	kcs_chan = <1>;
++	kcs_addr = <0xca0>;
++	status = "okay";
++};
++
++&kcs1 {
++	kcs_chan = <2>;
++	kcs_addr = <0xca8>;
++	status = "okay";
++};
++
++&kcs3 {
++	kcs_chan = <4>;
++	kcs_addr = <0xcb0>;
++	status = "okay";
++};
++
++&bt {
++	status = "okay";
++};
++
++&pwm0 {
++	phytium,db = <0 0 0 0 0 0>;
++	status = "okay";
++};
++
++&pwm1 {
++	phytium,db = <0 0 0 1000 1000 0>;
++	status = "okay";
++};
++
++&tacho0 {
++	status = "okay";
++};
++
++&tacho1 {
++	status = "okay";
++};
++
++&tacho4 {
++	status = "okay";
++};
++
++&nand0 {
++	nand-bus-width = <8>;
++	nand-ecc-mode = "hw";
++	nand-ecc-strength = <8>;
++	nand-ecc-step-size = <512>;
++	status = "okay";
++
++	partitions {
++		compatible = "fixed-partitions";
++		#address-cells = <1>;
++		#size-cells = <1>;
++
++		part1@0 {
++			label = "part1";
++			reg = <0x0 0x2000000>;
++		};
++
++		part2@2000000 {
++			label = "part2";
++			reg = <0x2000000 0x4000000>;
++		};
++	};
++};
++
++&rng0 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000q-come-board.dts b/arch/arm64/boot/dts/phytium/e2000q-come-board.dts
+new file mode 100755
+index 000000000..804146468
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000q-come-board.dts
+@@ -0,0 +1,268 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2204 come board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * Hongmin Qi <qihongmin@phytium.com.cn>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2204.dtsi"
++
++/{
++	model = "Pe2204 come Board";
++	compatible = "phytium,pe2204";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x2 0x00000000>;
++	};
++};
++
++&soc {
++	mio3: i2c@2801a000 {
++		status = "okay";
++		compatible = "phytium,i2c";
++		reg = <0x0 0x2801a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 95 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		eeprom@50 {
++			compatible = "atmel,24c02";
++			reg = <0x50>;
++			pagesize = <1>;
++		};
++	};
++
++	mio9: i2c@28026000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28026000 0x0 0x1000>;
++		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@32 {
++			compatible = "wave,sd3068";
++			reg = <0x32>;
++		};
++	};
++
++	mio6: uart@28020000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28020000 0x0 0x1000>;
++		interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio10: uart@28028000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28028000 0x0 0x1000>;
++		interrupts = <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio14: uart@28030000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28030000 0x0 0x1000>;
++		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio15: uart@28032000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28032000 0x0 0x1000>;
++		interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "disabled";
++};
++
++&macb2 {
++	phy-mode = "rgmii";
++	use-mii;
++	status = "disabled";
++};
++
++&macb3 {
++	phy-mode = "rgmii";
++	use-mii;
++	status = "disabled";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "disabled";
++};
++
++&spi2 {
++	global-cs = <1>;
++	status = "okay";
++
++	flash: w25q128@0 {
++		compatible = "winbond,w25q128", "jedec,spi-nor";
++		spi-tx-bus-width = <1>;
++		spi-rx-bus-width = <1>;
++		spi-max-frequency = <12000000>;
++		reg = <0x00>;
++	};
++};
++
++&mmc0 {
++	bus-width = <4>;
++	max-frequency = <25000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "okay";
++};
++
++&mmc1 {
++	status = "okay";
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&uart3 {
++	status = "okay";
++};
++
++&sata0 {
++	status = "okay";
++};
++
++&sata1 {
++	status = "okay";
++};
++
++&hda0 {
++	status = "okay";
++};
++
++&dc0 {
++	status = "okay";
++	pipe_mask = [03];
++	edp_mask = [00];
++};
++
++&gpio0 {
++	status = "okay";
++};
++
++&gpio1 {
++	status = "okay";
++};
++
++&gpio2 {
++	status = "okay";
++};
++
++&gpio3 {
++	status = "okay";
++};
++
++&gpio4 {
++	status = "okay";
++};
++
++&gpio5 {
++	status = "okay";
++};
++
++&pwm1 {
++	phytium,db = <0 0 0 1000 1000 0>;
++	status = "okay";
++};
++
++&vpu0 {
++    status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000q-demo-board.dts b/arch/arm64/boot/dts/phytium/e2000q-demo-board.dts
+new file mode 100644
+index 000000000..a9d892fbb
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000q-demo-board.dts
+@@ -0,0 +1,277 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2204 demo board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2204.dtsi"
++#include "dt-bindings/gpio/gpio.h"
++#include "dt-bindings/bus/phytium-local-bus.h"
++
++/{
++	model = "Pe2204 DEMO DDR4";
++	compatible = "phytium,pe2204";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x0 0x80000000>;
++	};
++
++	sound_card: sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,name = "phytium,pe220x-i2s-audio";
++		simple-audio-card,pin-switches = "mic-in";
++		simple-audio-card,widgets = "Microphone","mic-in";
++		simple-audio-card,routing = "MIC2","mic-in";
++		simple-audio-card,cpu {
++			sound-dai = <&i2s0>;
++		};
++		simple-audio-card,codec{
++			sound-dai = <&codec0>;
++		};
++	};
++};
++
++&soc {
++	mio9: i2c@28026000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28026000 0x0 0x1000>;
++		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		/* localized demo board use this rtc device */
++		rtc@32 {
++			compatible = "wave,sd3068";
++			reg = <0x32>;
++		};
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++
++	mio14: i2c@28030000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28030000 0x0 0x1000>;
++		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		codec0: es8336@10 {
++			det-gpios = <&gpio2 5  GPIO_ACTIVE_LOW>;
++			sel-gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
++			#sound-dai-cells = <0x0>;
++			compatible = "everest,es8336";
++			reg = <0x10>;
++		};
++	};
++};
++
++#define NOR_TIM0 (NOR_TACSEX(4)|NOR_TEADCX(6)|NOR_TCESX(1)|NOR_TEAHCX(3))
++#define NOR_TIM1 (NOR_TACOX(0x3F)|NOR_TRADX(0x1F)|NOR_TSEQRADX(1))
++#define NOR_TIM2 (NOR_TCSX(0xF)|NOR_TCHX(0xF)|NOR_TWPHX(4)|NOR_TWPX(0xF))
++
++#define GPCM_TIM0 (GPCM_TACSEX(1)|GPCM_TEADCX(4)|GPCM_TEAHCX(1))
++#define GPCM_TIM1 (GPCM_TACOX(4)|GPCM_TAADX(1)|GPCM_TRADX(5))
++#define GPCM_TIM2 (GPCM_TCSX(2)|GPCM_TCHX(1)|GPCM_TWPX(6))
++
++&lbc {
++	device_list = < 0x0 LBC_NOR_CM NOR_TIM0 NOR_TIM1 NOR_TIM2
++				    /*0x0 LBC_GPCM GPCM_TIM0 GPCM_TIM1 GPCM_TIM2 */>;
++	status = "okay";
++	lbc_nor: lbc_nor@0 {
++		compatible = "cfi-flash";
++		reg = <0x0 0x0 0x1000000>;
++		bank-width = <2>;
++		little-endian;
++		status = "okay";
++	};
++	lbc_sram: lbc_sram@1 {
++		compatible = "mmio-sram";
++		reg = <0x0 0x0 0x1000000>;
++		status = "disabled";
++	};
++};
++
++&gpio0 {
++    status = "okay";
++};
++
++&gpio1 {
++    status = "okay";
++};
++
++&gpio2 {
++    status = "okay";
++};
++
++&gpio3 {
++    status = "okay";
++};
++
++&gpio4 {
++    status = "okay";
++};
++
++&gpio5 {
++    status = "okay";
++};
++
++&watchdog0 {
++    status = "okay";
++};
++
++&watchdog1 {
++    status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++/*
++ * In demo board, M.2 interface may insert two types of disks: PCIE (nvme protocol) or SATA (ahci protocol),
++ * so here enable 'sata0' node by default to correspond to the sata drive case. Pin multiplexing exists
++ * in PCIE2 and SATA0, when used as a boot disk, the BIOS can automatically recognize these two conditions.
++ */
++&sata0 {
++	status = "okay";
++};
++
++&sata1 {
++	status = "okay";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi2 {
++	global-cs = <1>;
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&mmc0 {
++	bus-width = <0x00000008>;
++	max-frequency = <100000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	mmc-hs200-1_8v;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "okay";
++};
++
++&mmc1 {
++	bus-width = <0x00000004>;
++	max-frequency = <50000000>;
++	cap-sdio-irq;
++	cap-sd-highspeed;
++	no-sdio;
++	no-mmc;
++	status = "okay";
++};
++
++&i2s0 {
++	#sound-dai-cells = <0>;
++	dai-name = "phytium-i2s-lsd";
++	status = "okay";
++};
++
++&dc0 {
++	pipe_mask = /bits/ 8 <0x3>;
++	edp_mask = /bits/ 8 <0x0>;
++	status = "okay";
++};
++
++&i2s_dp0 {
++	status = "okay";
++};
++
++&i2s_dp1 {
++	status = "okay";
++};
++
++&pmdk_dp {
++    num-dp = <2>;
++    dp-mask = /bits/ 8 <0x3>;
++    status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
++
++&vpu0 {
++    status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000q-edu-board.dts b/arch/arm64/boot/dts/phytium/e2000q-edu-board.dts
+new file mode 100755
+index 000000000..5e9dd98c0
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000q-edu-board.dts
+@@ -0,0 +1,347 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2204 edu board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * Hongmin Qi <qihongmin@phytium.com.cn>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2204.dtsi"
++
++/{
++	model = "Pe2204 edu Board";
++	compatible = "phytium,pe2204";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x2 0x00000000>;
++	};
++
++	sound_card: sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,name = "phytium,pe220x-i2s-audio";
++		simple-audio-card,cpu {
++			sound-dai = <&i2s0>;
++		};
++		simple-audio-card,codec {
++			sound-dai = <&codec0>;
++		};
++	};
++};
++
++&soc {
++	mio9: i2c@28026000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28026000 0x0 0x1000>;
++		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <0x1>;
++		#size-cells = <0x0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++
++	mio8: i2c@28024000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28024000 0x0 0x1000>;
++		interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <0x1>;
++		#size-cells = <0x0>;
++		status = "okay";
++	};
++
++	mio14: i2c@28030000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28030000 0x0 0x1000>;
++		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <0x1>;
++		#size-cells = <0x0>;
++		status = "okay";
++
++		codec0:es8336@10 {
++			det-gpios = <&gpio2 5 0>;
++			sel-gpios = <&gpio2 6 0>;
++			#sound-dai-cells = <0x0>;
++			compatible = "everest,es8336";
++			reg = <0x10>;
++			mic-src = [30];
++	   };
++	};
++
++	mio0: uart@28014000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28014000 0x0 0x1000>;
++		interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio1: uart@28016000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28016000 0x0 0x1000>;
++		interrupts = <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio11: uart@2802A000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x2802a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio15: uart@28032000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28032000 0x0 0x1000>;
++		interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++};
++
++&gpio2 {
++	status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	//status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "host";
++	//status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "host";
++	//status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	//status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	//status = "okay";
++};
++
++&macb1 {
++	phy-mode = "sgmii";
++	use-mii;
++	//status = "okay";
++};
++
++&macb2 {
++	phy-mode = "sgmii";
++	use-mii;
++	//status = "okay";
++};
++
++&macb3 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "okay";
++
++	flash: w25q128@0 {
++        compatible = "jedec,spi-nor";
++        spi-tx-bus-width = <1>;
++        spi-rx-bus-width = <1>;
++        spi-max-frequency = <12000000>;
++        reg = <0x00>;
++        status = "okay";
++    };
++};
++
++&mmc0 {
++	bus-width = <0x8>;
++	max-frequency = <50000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "okay";
++};
++
++&mmc1 {
++	bus-width = <0x4>;
++	max-frequency = <25000000>;
++	cap-sdio-irq;
++	cap-sd-highspeed;
++	status = "okay";
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&uart3 {
++	status = "okay";
++};
++
++&sata0 {
++	//status = "okay";
++};
++
++&sata1 {
++	status = "okay";
++};
++
++&dc0 {
++	status = "okay";
++	pipe_mask = [01];
++	edp_mask = [00];
++};
++
++&vpu0 {
++	status = "okay";
++};
++
++&i2s0 {
++	#sound-dai-cells = <0>;
++	dai-name = "phytium-i2s-lsd";
++	status = "okay";
++};
++
++&i2s_dp0 {
++	status = "okay";
++};
++
++&pmdk_dp {
++	num-dp = <1>;
++	dp-mask = /bits/ 8 <0x1>;
++	status = "okay";
++};
++
++&pwm0 {
++	phytium,db = <0 0 0 0 0 0>;
++	status = "okay";
++};
++
++&pwm1 {
++	phytium,db = <0 0 0 0 0 0>;
++	status = "okay";
++};
++
++
++&gpio0 {
++	status = "okay";
++};
++
++&gpio1 {
++	status = "okay";
++};
++
++&gpio2 {
++	status = "okay";
++};
++
++&gpio3 {
++	status = "okay";
++};
++
++&gpio4 {
++	status = "okay";
++};
++
++&gpio5 {
++	status = "okay";
++};
++
++&keypad {
++	keypad,num-rows = <4>;
++	keypad,num-columns = <4>;
++	linux,keymap = <0x00000011
++				    0x00010012
++					0x00020013
++					0x00030014
++					0x01000021 /*KEY_21*/
++					0x01010022 /*KEY_22*/
++					0x01020023 /*KEY_23*/
++					0x01030024 /*KEY_24*/
++					0x02000031 /*KEY_31*/
++					0x02010032 /*KEY_32*/
++					0x02020033 /*KEY_33*/
++					0x02030034 /*KEY_34*/
++					0x03000041 /*KEY_41*/
++					0x03010042 /*KEY_42*/
++					0x03020043 /*KEY_43*/
++					0x03030044 /*KEY_44*/>;
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000q-hanwei-board.dts b/arch/arm64/boot/dts/phytium/e2000q-hanwei-board.dts
+new file mode 100755
+index 000000000..5649d0826
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000q-hanwei-board.dts
+@@ -0,0 +1,218 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2204 hanwei board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * Hongmin Qi <qihongmin@phytium.com.cn>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2204.dtsi"
++
++/{
++	model = "Pe2204 hanwei Board";
++	compatible = "phytium,pe2204";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x2 0x00000000>;
++	};
++};
++
++&soc {
++	mio3: uart@2801a000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x2801a000 0x0 0x1000>;
++		interrupts = <0x0 0x5f 0x4>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio8: uart@28024000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28024000 0x0 0x1000>;
++		interrupts = <0x0 0x64 0x4>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio10: uart@28028000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28028000 0x0 0x1000>;
++		interrupts = <0x0 0x66 0x4>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio14: uart@28030000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28030000 0x0 0x1000>;
++		interrupts = <0x0 0x6a 0x4>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio15: uart@28032000 {
++		compatible = "arm,pl011", "arm,primecell";
++		reg = <0x0 0x28032000 0x0 0x1000>;
++		interrupts = <0x0 0x6b 0x4>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb2 {
++	phy-mode = "rgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb3 {
++	phy-mode = "rgmii";
++	use-mii;
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "disabled";
++};
++
++&mmc0 {
++	bus-width = <8>;
++	max-frequency = <25000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "disabled";
++};
++
++&mmc1 {
++	status = "okay";
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&uart3 {
++	status = "okay";
++};
++
++&sata0 {
++	status = "okay";
++};
++
++&sata1 {
++	status = "okay";
++};
++
++&gpio0 {
++	status = "okay";
++};
++
++&gpio1 {
++	status = "okay";
++};
++
++&gpio2 {
++	status = "okay";
++};
++
++&gpio3 {
++	status = "okay";
++};
++
++&gpio4 {
++	status = "okay";
++};
++
++&gpio5 {
++	status = "okay";
++};
++
++&vpu0 {
++    status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000q-miniitx-board.dts b/arch/arm64/boot/dts/phytium/e2000q-miniitx-board.dts
+new file mode 100644
+index 000000000..e2adaa4d5
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000q-miniitx-board.dts
+@@ -0,0 +1,332 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium miniITX-Pe2204 development board.
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * Shaojun Yang <yangshaojun@phytium.com.cn>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++/memreserve/ 0xf4000000 0x4000000;
++
++#include "pe2204.dtsi"
++
++/{
++	model = "miniITX-Pe2204 Board";
++	compatible = "phytium,pe2204";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++	aliases {
++		serial4 = &mio0;
++		serial5 = &mio1;
++		serial6 = &mio8;
++		serial7 = &mio11;
++		serial8 = &mio15;
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x2 0x00000000>;
++	};
++
++	sound_card: sound {
++        compatible = "simple-audio-card";
++        simple-audio-card,format = "i2s";
++        simple-audio-card,name = "phytium,pe220x-i2s-audio";
++        simple-audio-card,cpu {
++            sound-dai = <&i2s0>;
++        };
++        simple-audio-card,codec{
++            sound-dai = <&codec0>;
++        };
++    };
++};
++
++&soc {
++	mio9: i2c@28026000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28026000 0x0 0x1000>;
++		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++
++	mio14: i2c@28030000 {
++        compatible = "phytium,i2c";
++        reg = <0x0 0x28030000 0x0 0x1000>;
++        interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
++        clocks = <&sysclk_50mhz>;
++        #address-cells = <1>;
++        #size-cells = <0>;
++        status = "okay";
++
++        codec0: es8336@10 {
++            det-gpios = <&gpio2 5 0>;
++            sel-gpios = <&gpio2 6 0>;
++            #sound-dai-cells = <0>;
++            compatible = "everest,es8336";
++            reg = <0x10>;
++            mic-src = [20];
++        };
++	};
++
++
++	mio0: uart@28014000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28014000 0x0 0x1000>;
++		interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio1: uart@28016000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28016000 0x0 0x1000>;
++		interrupts = <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio8: uart@28024000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28024000 0x0 0x1000>;
++		interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio11: uart@2802A000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x2802A000 0x0 0x1000>;
++		interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio15: uart@28032000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28032000 0x0 0x1000>;
++		interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++};
++
++&gpio0 {
++    status = "okay";
++};
++
++&gpio1 {
++    status = "okay";
++};
++
++&gpio2 {
++    status = "okay";
++};
++
++&gpio3 {
++    status = "okay";
++};
++
++&gpio4 {
++    status = "okay";
++};
++
++&gpio5 {
++    status = "okay";
++};
++
++&watchdog0 {
++	status = "okay";
++};
++
++&watchdog1 {
++	status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&sata1 {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "disabled";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "disabled";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb2 {
++	phy-mode = "rgmii";
++	use-mii;
++	status = "okay";
++};
++
++&dc0 {
++        reg = <0x0 0x32000000 0x0 0x8000>,
++              <0x0 0xf4000000 0x0 0x4000000>; // (optional)
++	pipe_mask = [03];
++	edp_mask = [00];
++	status = "okay";
++};
++
++&i2s0 {
++	#sound-dai-cells = <0>;
++	dai-name = "phytium-i2s-lsd";
++	status = "okay";
++};
++
++&i2s_dp0 {
++	dai-name = "phytium-i2s-dp0";
++	status = "okay";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "disabled";
++
++	flash: w25q128@0 {
++		compatible = "winbond,w25q128", "jedec,spi-nor";
++		spi-tx-bus-width = <1>;
++		spi-rx-bus-width = <1>;
++		spi-max-frequency = <12000000>;
++		reg = <0x00>;
++		status = "disabled";
++	};
++};
++
++&spi1 {
++	global-cs = <1>;
++	status = "disabled";
++};
++
++&spi2 {
++	global-cs = <1>;
++	status = "disabled";
++};
++
++&mmc0 {
++	bus-width = <0x00000004>;
++	max-frequency = <50000000>;
++	cap-sdio-irq;
++	cap-sd-highspeed;
++	no-mmc;
++	status = "okay";
++};
++
++&mmc1 {
++	bus-width = <0x00000008>;
++	max-frequency = <50000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "disabled";
++};
++
++&pwm0 {
++	phytium,db = <0 0 0 1000 1000 0>;
++	status = "okay";
++};
++
++&pwm1 {
++	phytium,db = <0 0 0 1000 1000 0>;
++	status = "okay";
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&uart3 {
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
++
++&vpu0 {
++    status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000q-test-a-board.dts b/arch/arm64/boot/dts/phytium/e2000q-test-a-board.dts
+new file mode 100644
+index 000000000..7d5cd3f9f
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000q-test-a-board.dts
+@@ -0,0 +1,168 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2204 test board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2204.dtsi"
++
++/{
++	model = "Pe2204 TESTA DDR4 Board";
++	compatible = "phytium,pe2204";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x2 0x00000000>;
++	};
++};
++
++&soc {
++	mio3: i2c@2801a000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x2801a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 95 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&dc0 {
++	pipe_mask = /bits/ 8 <0x3>;
++	edp_mask = /bits/ 8 <0x0>;
++	status = "okay";
++};
++
++&i2s_dp0 {
++	status = "okay";
++};
++
++&i2s_dp0 {
++	status = "okay";
++};
++
++&pmdk_dp{
++	num-dp = <2>;
++	status = "okay";
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "okay";
++
++	flash: w25q128@0 {
++		compatible = "winbond,w25q128", "jedec,spi-nor";
++		spi-max-frequency = <12000000>;
++		reg = <0>;
++	};
++};
++
++&spi1 {
++	status = "okay";
++};
++
++&spi2 {
++	status = "okay";
++};
++
++&spi3 {
++	status = "okay";
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&uart3 {
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
++
++&vpu0 {
++    status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000q-test-b-board.dts b/arch/arm64/boot/dts/phytium/e2000q-test-b-board.dts
+new file mode 100644
+index 000000000..486056980
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000q-test-b-board.dts
+@@ -0,0 +1,213 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2204 test board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2204.dtsi"
++
++/{
++	model = "Pe2204 TESTB DDR4 Board";
++	compatible = "phytium,pe2204";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x2 0x00000000>;
++	};
++
++	sound_card: sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,name = "phytium,pe220x-i2s-audio";
++		simple-audio-card,cpu {
++			sound-dai = <&i2s0>;
++		};
++		simple-audio-card,codec{
++			sound-dai = <&codec0>;
++		};
++	};
++};
++
++&soc {
++	mio0: i2c@28014000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28014000 0x0 0x1000>;
++		interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++	};
++
++	mio8: i2c@28024000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28024000 0x0 0x1000>;
++		interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++
++	mio11: i2c@2802a000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x2802a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		codec0: es8388@10 {
++			#sound-dai-cells = <0>;
++			compatible = "everest,es8388";
++			reg = <0x10>;
++		};
++        };
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&sata0 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&dc0 {
++	pipe_mask = /bits/ 8 <0x1>;
++	edp_mask = /bits/ 8 <0x0>;
++	status = "okay";
++};
++
++&i2s_dp0 {
++	status = "okay";
++};
++
++&pmdk_dp{
++	num-dp = <1>;
++	dp-mask = /bits/ 8 <0x1>;
++	status = "okay";
++};
++
++&macb3 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&mmc0 {
++	bus-width = <0x00000008>;
++	max-frequency = <50000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "okay";
++};
++
++&mmc1 {
++	bus-width = <0x00000004>;
++	max-frequency = <50000000>;
++	cap-sdio-irq;
++	cap-sd-highspeed;
++	sd-uhs-sdr25;
++	no-mmc;
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&i2s0 {
++	#sound-dai-cells = <0>;
++	dai-name = "phytium-i2s-lsd";
++	status = "okay";
++};
++
++&sound_card {
++	status = "okay";
++};
++
++&gpio3 {
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
++
++&vpu0 {
++    status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000q-test-c-board.dts b/arch/arm64/boot/dts/phytium/e2000q-test-c-board.dts
+new file mode 100644
+index 000000000..7051853eb
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000q-test-c-board.dts
+@@ -0,0 +1,210 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2204 test board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2204.dtsi"
++
++/{
++	model = "Pe2204 TESTC DDR4 Board";
++	compatible = "phytium,pe2204";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x2 0x00000000>;
++	};
++};
++
++&soc {
++	mio3: i2c@2801a000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x2801a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 95 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&sata1 {
++	status = "okay";
++};
++
++&macb2 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb3 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++/*
++ * A Keypad can be customized by users. For example,
++ * users can configure a 8*8 keypad:
++ * - keypad,num-rows = <8>;
++ * - keypad,num-columns = <8>;
++ * - keymap:
++ *   - The highest one byte represents the row
++ *   - The second byte represents the columns
++ *   - The lowest two bytes represent the key value
++ *
++ * Please refer to include/uapi/linux/input-event-codes.h
++ * for key-value definitions.
++ */
++&keypad {
++	keypad,num-rows = <4>;
++	keypad,num-columns = <4>;
++	linux,keymap = <0x00000012	/* KEY_E          */
++			0x00010013	/* KEY_R          */
++			0x00020014	/* KEY_T          */
++			0x00030066	/* KEY_HOME       */
++			0x01000020	/* KEY_D          */
++			0x01010021	/* KEY_F          */
++			0x01020022	/* KEY_G          */
++			0x010300e7	/* KEY_SEND       */
++			0x0200002d	/* KEY_X          */
++			0x0201002e	/* KEY_C          */
++			0x0202002f	/* KEY_V          */
++			0x0203006b	/* KEY_END        */
++			0x0300002c	/* KEY_Z          */
++			0x0301004e	/* KEY_KPLUS      */
++			0x03020030	/* KEY_B          */
++			0x0303003b>;	/* KEY_F1	  */
++	status = "okay";
++};
++
++&hda0 {
++	status = "okay";
++};
++
++&kcs0 {
++	kcs_chan = <1>;
++	kcs_addr = <0xca0>;
++	status = "okay";
++};
++
++&kcs1 {
++	kcs_chan = <2>;
++	kcs_addr = <0xca8>;
++	status = "okay";
++};
++
++&kcs3 {
++	kcs_chan = <4>;
++	kcs_addr = <0xcb0>;
++	status = "okay";
++};
++
++&bt {
++	status = "okay";
++};
++
++&pwm0 {
++	phytium,db = <0 0 0 0 0 0>;
++	status = "okay";
++};
++
++&pwm1 {
++	phytium,db = <0 0 0 1000 1000 0>;
++	status = "okay";
++};
++
++&tacho0 {
++	status = "okay";
++};
++
++&tacho1 {
++	status = "okay";
++};
++
++&nand0 {
++	nand-bus-width = <8>;
++	nand-ecc-mode = "hw";
++	nand-ecc-strength = <8>;
++	nand-ecc-step-size = <512>;
++
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
++
++&vpu0 {
++    status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000q-vpx-board.dts b/arch/arm64/boot/dts/phytium/e2000q-vpx-board.dts
+new file mode 100755
+index 000000000..ce2bc39bc
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000q-vpx-board.dts
+@@ -0,0 +1,325 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2204 vpx board.
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * Tianyu Liu <liutianyu1250@phytium.com.cn>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2204.dtsi"
++
++/{
++	model = "Pe2204 vpx board";
++	compatible = "phytium,pe2204";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x2 0x00000000>;
++	};
++	aliases {
++		serial4 = &mio3;
++		serial5 = &mio8;
++		serial6 = &mio10;
++		serial7 = &mio11;
++		serial8 = &mio15;
++	};
++
++	sound_card: sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,name = "phytium,pe220x-i2s-audio";
++		simple-audio-card,cpu {
++			sound-dai = <&i2s0>;
++		};
++		simple-audio-card,codec{
++			sound-dai = <&codec0>;
++		};
++	};
++};
++
++&soc {
++	mio9: i2c@28026000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28026000 0x0 0x1000>;
++		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++
++	mio14: i2c@28030000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28030000 0x0 0x1000>;
++		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		codec0: es8336@10 {
++			det-gpios = <&gpio2 5 0>;
++			sel-gpios = <&gpio2 6 0>;
++			#sound-dai-cells = <0>;
++			compatible = "everest,es8336";
++			reg = <0x10>;
++			mic-src = [30];
++		};
++	};
++
++	mio3: uart@2801A000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x2801A000 0x0 0x1000>;
++		interrupts = <GIC_SPI 95 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio8: uart@28024000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28024000 0x0 0x1000>;
++		interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio10: uart@28028000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28028000 0x0 0x1000>;
++		interrupts = <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio11: uart@2802A000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x2802A000 0x0 0x1000>;
++		interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio13: uart@2802E000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x2802E000 0x0 0x1000>;
++		interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio15: uart@28032000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28032000 0x0 0x1000>;
++		interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++};
++
++&gpio0 {
++    status = "okay";
++};
++
++&gpio1 {
++    status = "okay";
++};
++
++&gpio2 {
++    status = "okay";
++};
++
++&gpio3 {
++    status = "okay";
++};
++
++&gpio4 {
++    status = "okay";
++};
++
++&gpio5 {
++    status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&sata0 {
++	status = "okay";
++};
++
++&sata1 {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "host";
++	status = "disabled";
++};
++
++&usb2_2 {
++	dr_mode = "host";
++	status = "disabled";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb2 {
++	phy-mode = "rgmii";
++	use-mii;
++	force-phy-mode;
++	status = "okay";
++};
++
++&macb3 {
++	phy-mode = "rgmii";
++	use-mii;
++	status = "okay";
++};
++
++&dc0 {
++	pipe_mask = [03];
++	edp_mask = [00];
++	status = "okay";
++};
++
++&i2s0 {
++	#sound-dai-cells = <0>;
++	dai-name = "phytium-i2s-lsd";
++	status = "okay";
++};
++
++&i2s_dp0 {
++	status = "okay";
++};
++
++&i2s_dp1 {
++	status = "okay";
++};
++
++&pmdk_dp {
++	num-dp = <2>;
++	dp-mask = /bits/ 8 <0x3>;
++	status = "okay";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "disabled";
++
++	flash: w25q128@0 {
++		compatible = "winbond,w25q128", "jedec,spi-nor";
++		spi-tx-bus-width = <1>;
++		spi-rx-bus-width = <1>;
++		spi-max-frequency = <12000000>;
++		reg = <0x00>;
++		status = "disabled";
++	};
++};
++
++&spi2 {
++	global-cs = <1>;
++	status = "disabled";
++};
++
++&mmc0 {
++	bus-width = <0x00000008>;
++	max-frequency = <25000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "okay";
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&uart3 {
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
++
++&vpu0 {
++    status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000s-demo-board.dts b/arch/arm64/boot/dts/phytium/e2000s-demo-board.dts
+new file mode 100644
+index 000000000..047d1c5d5
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000s-demo-board.dts
+@@ -0,0 +1,100 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2201 demo board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2201.dtsi"
++
++/{
++	model = "Pe2201 DEMO DDR4";
++	compatible = "phytium,pe2201";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x0 0x80000000>;
++	};
++};
++
++&soc {
++	mio9: i2c@28026000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28026000 0x0 0x1000>;
++		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++	};
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi2 {
++	global-cs = <1>;
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&mmc0 {
++	status = "okay";
++};
++
++&mmc1 {
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000s-test-a-board.dts b/arch/arm64/boot/dts/phytium/e2000s-test-a-board.dts
+new file mode 100644
+index 000000000..28b6cc547
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000s-test-a-board.dts
+@@ -0,0 +1,149 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2201 test board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2201.dtsi"
++
++/{
++	model = "Pe2201 TESTA DDR4 Board";
++	compatible = "phytium,pe2201";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x0 0x7a000000>;
++	};
++};
++
++&soc {
++	mio3: i2c@2801a000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x2801a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 95 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&dc0 {
++	pipe_mask = /bits/ 8 <0x3>;
++	edp_mask = /bits/ 8 <0x0>;
++	status = "okay";
++};
++
++&i2s_dp0 {
++	dai-name = "phytium-i2s-dp0";
++	status = "okay";
++};
++
++&pmdk_dp{
++	num-dp = <1>;
++	status = "okay";
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "okay";
++
++	flash: w25q128@0 {
++		compatible ="winbond,w25q128", "jedec,spi-nor";
++		spi-max-frequency = <12000000>;
++		reg = <0>;
++	};
++};
++
++&spi1 {
++	status = "okay";
++};
++
++&spi2 {
++	status = "okay";
++};
++
++&spi3 {
++	status = "okay";
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&uart3 {
++	status = "okay";
++};
++
++&sgpio {
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000s-test-b-board.dts b/arch/arm64/boot/dts/phytium/e2000s-test-b-board.dts
+new file mode 100644
+index 000000000..dcbe4c5b9
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000s-test-b-board.dts
+@@ -0,0 +1,141 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2201 test board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2201.dtsi"
++
++/{
++	model = "Pe2201 TESTB DDR4 Board";
++	compatible = "phytium,pe2201";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x0 0x7a000000>;
++	};
++};
++
++&soc {
++	mio0: i2c@28014000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28014000 0x0 0x1000>;
++		interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++	};
++
++	mio8: i2c@28024000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28024000 0x0 0x1000>;
++		interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&dc0 {
++	pipe_mask = /bits/ 8 <0x1>;
++	edp_mask = /bits/ 8 <0x0>;
++	status = "okay";
++};
++
++&i2s_dp0 {
++	dai-name = "phytium-i2s-dp0";
++	status = "okay";
++};
++
++&pmdk_dp{
++	num-dp = <1>;
++	status = "okay";
++};
++
++&mmc0 {
++	bus-width = <0x00000008>;
++	max-frequency = <50000000>;
++	cap-mmc-hw-reset;
++	cap-mmc-highspeed;
++	no-sdio;
++	no-sd;
++	non-removable;
++	status = "okay";
++};
++
++&mmc1 {
++	bus-width = <0x00000004>;
++	max-frequency = <50000000>;
++	cap-sdio-irq;
++	cap-sd-highspeed;
++	sd-uhs-sdr25;
++	no-mmc;
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/e2000s-test-c-board.dts b/arch/arm64/boot/dts/phytium/e2000s-test-c-board.dts
+new file mode 100644
+index 000000000..6f0c39da6
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/e2000s-test-c-board.dts
+@@ -0,0 +1,220 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pe2201 test board
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2201.dtsi"
++
++/{
++	model = "Pe2201 TESTC LPDDR4 Board";
++	compatible = "phytium,pe2201";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x0 0x7a000000>;
++	};
++};
++
++&soc {
++	mio3: i2c@2801a000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x2801a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 95 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "okay";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "usxgmii";
++	status = "okay";
++};
++
++&i2c0 {
++	status = "okay";
++};
++
++&i2c1 {
++	status = "okay";
++};
++
++&i2c2 {
++	status = "okay";
++};
++
++&kcs0 {
++	kcs_chan = <1>;
++	kcs_addr = <0xca0>;
++	status = "okay";
++};
++
++&kcs1 {
++	kcs_chan = <2>;
++	kcs_addr = <0xca8>;
++	status = "okay";
++};
++
++&kcs3 {
++	kcs_chan = <4>;
++	kcs_addr = <0xcb0>;
++	status = "okay";
++};
++
++&bt {
++	status = "okay";
++};
++
++&onewire0 {
++	status = "okay";
++};
++
++&pwm0 {
++	phytium,db = <0 0 0 0 0 0>;
++	status = "okay";
++};
++
++&pwm1 {
++	phytium,db = <0 0 0 1000 1000 0>;
++	status = "okay";
++};
++
++&pwm2 {
++	phytium,db = <0 0 0 1000 1000 1>;
++	status = "okay";
++};
++
++&pwm3 {
++	phytium,db = <0 0 0 1000 1000 2>;
++	status = "okay";
++};
++
++&pwm4 {
++	phytium,db = <0 0 0 0 0 0>;
++	status = "okay";
++};
++
++&pwm5 {
++	phytium,db = <0 0 0 0 0 0>;
++	status = "okay";
++};
++
++&pwm6 {
++	phytium,db = <0 0 0 0 0 0>;
++	status = "okay";
++};
++
++&pwm7 {
++	phytium,db = <0 0 0 0 0 0>;
++	status = "okay";
++};
++
++&tacho0 {
++	status = "okay";
++};
++
++&tacho1 {
++	status = "okay";
++};
++
++&nand0 {
++	nand-bus-width = <8>;
++	nand-ecc-mode = "hw";
++	nand-ecc-strength = <8>;
++	nand-ecc-step-size = <512>;
++	status = "okay";
++
++	partitions {
++		compatible = "fixed-partitions";
++		#address-cells = <1>;
++		#size-cells = <1>;
++
++		part1@0 {
++			label = "part1";
++			reg = <0x0 0x2000000>;
++		};
++
++		part2@2000000 {
++			label = "part2";
++			reg = <0x2000000 0x4000000>;
++		};
++	};
++};
++
++&i3c0 {
++	status = "okay";
++};
++
++&i3c1 {
++	status = "okay";
++};
++
++&i3c2 {
++	status = "okay";
++};
++
++&i3c3 {
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/pe2201.dtsi b/arch/arm64/boot/dts/phytium/pe2201.dtsi
+new file mode 100644
+index 000000000..860ad8c9f
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/pe2201.dtsi
+@@ -0,0 +1,284 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * dts file for Phytium Pe2201 SoC
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ */
++
++#include "pe220x.dtsi"
++
++/ {
++	compatible = "phytium,pe2201";
++
++	aliases {
++		ethernet0 = &macb0;
++		ethernet1 = &macb1;
++	};
++};
++
++&cpu {
++	cpu0: cpu@0 {
++		device_type = "cpu";
++		compatible = "phytium,ftc310", "arm,armv8";
++		reg = <0x0 0x200>;
++		enable-method = "psci";
++		clocks = <&scmi_dvfs 2>;
++	};
++};
++
++&soc {
++	i2c0: i2c@28011000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28011000 0x0 0x1000>;
++		interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "smbus_alert";
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++	};
++
++	i2c1: i2c@28012000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28012000 0x0 0x1000>;
++		interrupts = <GIC_SPI 90 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "smbus_alert";
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++	};
++
++	i2c2: i2c@28013000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28013000 0x0 0x1000>;
++		interrupts = <GIC_SPI 91 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++	};
++
++	onewire0: onewire@2803f000 {
++		compatible = "phytium,w1";
++		reg = <0x0 0x2803f000 0x0 0x1000>;
++		interrupts = <GIC_SPI 166 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	i3c0: i3c-master@28045000 {
++		compatible = "phytium,cdns-i3c-master";
++		reg = <0x0 0x28045000 0x0 0x1000>;
++		interrupts = <GIC_SPI 168 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_100mhz>, <&sysclk_100mhz>;
++		clock-names = "pclk", "sysclk";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-scl-hz = <400000>;
++		i3c-scl-hz = <1000000>;
++		status = "disabled";
++	};
++
++	i3c1: i3c-master@28046000 {
++		compatible = "phytium,cdns-i3c-master";
++		reg = <0x0 0x28046000 0x0 0x1000>;
++		interrupts = <GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_100mhz>, <&sysclk_100mhz>;
++		clock-names = "pclk", "sysclk";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-scl-hz = <400000>;
++		i3c-scl-hz = <1000000>;
++		status = "disabled";
++	};
++
++	i3c2: i3c-master@28047000 {
++		compatible = "phytium,cdns-i3c-master";
++		reg = <0x0 0x28047000 0x0 0x1000>;
++		interrupts = <GIC_SPI 170 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_100mhz>, <&sysclk_100mhz>;
++		clock-names = "pclk", "sysclk";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-scl-hz = <400000>;
++		i3c-scl-hz = <1000000>;
++		status = "disabled";
++	};
++
++	i3c3: i3c-master@28048000 {
++		compatible = "phytium,cdns-i3c-master";
++		reg = <0x0 0x28048000 0x0 0x1000>;
++		interrupts = <GIC_SPI 171 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_100mhz>, <&sysclk_100mhz>;
++		clock-names = "pclk", "sysclk";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-scl-hz = <400000>;
++		i3c-scl-hz = <1000000>;
++		status = "disabled";
++	};
++
++	pwm2: pwm@2804c000 {
++		compatible = "phytium,pwm";
++		reg = <0x0 0x2804c000 0x0 0x1000>;
++		interrupts = <GIC_SPI 175 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++	};
++
++	pwm3: pwm@2804d000 {
++		compatible = "phytium,pwm";
++		reg = <0x0 0x2804d000 0x0 0x1000>;
++		interrupts = <GIC_SPI 176 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++	};
++
++	pwm4: pwm@2804e000 {
++		compatible = "phytium,pwm";
++		reg = <0x0 0x2804e000 0x0 0x1000>;
++		interrupts = <GIC_SPI 177 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++	};
++
++	pwm5: pwm@2804f000 {
++		compatible = "phytium,pwm";
++		reg = <0x0 0x2804f000 0x0 0x1000>;
++		interrupts = <GIC_SPI 178 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++	};
++
++	pwm6: pwm@28050000 {
++		compatible = "phytium,pwm";
++		reg = <0x0 0x28050000 0x0 0x1000>;
++		interrupts = <GIC_SPI 179 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++	};
++
++	pwm7: pwm@28051000 {
++		compatible = "phytium,pwm";
++		reg = <0x0 0x28051000 0x0 0x1000>;
++		interrupts = <GIC_SPI 180 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++	};
++
++	adc0: adc@2807b000 {
++		compatible = "phytium,adc";
++		reg = <0x0 0x2807b000 0x0 0x1000>;
++		interrupts = <GIC_SPI 232 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		channel@0 {
++			reg = <0>;
++		};
++		channel@1 {
++			reg = <1>;
++		};
++		channel@2 {
++			reg = <2>;
++		};
++		channel@3 {
++			reg = <3>;
++		};
++		channel@4 {
++			reg = <4>;
++		};
++		channel@5 {
++			reg = <5>;
++		};
++		channel@6 {
++			reg = <6>;
++		};
++		channel@7 {
++			reg = <7>;
++		};
++	};
++
++	adc1: adc@2807c000 {
++		compatible = "phytium,adc";
++		reg = <0x0 0x2807c000 0x0 0x1000>;
++		interrupts = <GIC_SPI 233 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		channel@0 {
++			reg = <0>;
++		};
++		channel@1 {
++			reg = <1>;
++		};
++		channel@2 {
++			reg = <2>;
++		};
++		channel@3 {
++			reg = <3>;
++		};
++		channel@4 {
++			reg = <4>;
++		};
++		channel@5 {
++			reg = <5>;
++		};
++		channel@6 {
++			reg = <6>;
++		};
++		channel@7 {
++			reg = <7>;
++		};
++	};
++
++	sgpio: sgpio@2807d000 {
++		compatible = "phytium,sgpio";
++		reg = <0x0 0x2807d000 0x0 0x1000>;
++		interrupts = <GIC_SPI 190 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		ngpios = <96>;
++		bus-frequency = <48000>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		status = "disabled";
++	};
++
++	macb0: ethernet@32010000 {
++		compatible = "cdns,phytium-gem-1.0";
++		reg = <0x0 0x32010000 0x0 0x2000>;
++		interrupts = <GIC_SPI 64 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 65 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 66 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>;
++		clock-names = "pclk", "hclk", "tx_clk", "tsu_clk";
++		clocks = <&sysclk_250mhz>, <&sysclk_48mhz>, <&sysclk_48mhz>, <&sysclk_250mhz>;
++		magic-packet;
++		status = "disabled";
++	};
++
++	macb1: ethernet@32012000 {
++		compatible = "cdns,phytium-gem-1.0";
++		reg = <0x0 0x32012000 0x0 0x2000>;
++		interrupts = <GIC_SPI 68 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 71 IRQ_TYPE_LEVEL_HIGH>;
++		clock-names = "pclk", "hclk", "tx_clk", "tsu_clk";
++		clocks = <&sysclk_250mhz>, <&sysclk_48mhz>, <&sysclk_48mhz>, <&sysclk_250mhz>;
++		magic-packet;
++		status = "disabled";
++	};
++
++	jpeg0: jpeg@32b32000 {
++		compatible = "phytium,jpeg";
++		reg = <0x0 0x32b32000 0 0x1000>,
++		      <0x0 0x28072000 0 0x30>,
++		      <0x0 0x28073000 0 0x30>;
++		interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 224 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 225 IRQ_TYPE_LEVEL_HIGH>;
++		phytium,ocm-buf-addr = <0x30c40000 0x30c60000>;
++		status = "disabled";
++	};
++};
+diff --git a/arch/arm64/boot/dts/phytium/pe2202.dtsi b/arch/arm64/boot/dts/phytium/pe2202.dtsi
+new file mode 100644
+index 000000000..7cc8f5b82
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/pe2202.dtsi
+@@ -0,0 +1,185 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * dts file for Phytium Pe2202 SoC
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ */
++
++#include "pe220x.dtsi"
++
++/ {
++	compatible = "phytium,pe2202";
++
++	aliases {
++		ethernet0 = &macb0;
++		ethernet1 = &macb1;
++		ethernet2 = &macb2;
++		ethernet3 = &macb3;
++	};
++};
++
++&cpu {
++	cpu-map {
++		cluster0 {
++			core0 {
++				cpu = <&cpu_l0>;
++			};
++
++			core1 {
++				cpu = <&cpu_l1>;
++			};
++		};
++	};
++
++	cpu_l0: cpu@0 {
++		device_type = "cpu";
++		compatible = "phytium,ftc310", "arm,armv8";
++		reg = <0x0 0x200>;
++		enable-method = "psci";
++		clocks = <&scmi_dvfs 2>;
++	};
++
++	cpu_l1: cpu@1 {
++		device_type = "cpu";
++		compatible = "phytium,ftc310", "arm,armv8";
++		reg = <0x0 0x201>;
++		enable-method = "psci";
++		clocks = <&scmi_dvfs 2>;
++	};
++};
++
++&soc {
++	hda0: hda@28006000 {
++		compatible = "phytium,hda";
++		reg = <0x0 0x28006000 0x0 0x1000>;
++		interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	i2s0: i2s@28009000 {
++		compatible = "phytium,i2s";
++		reg = <0x0 0x28009000 0x0 0x1000>,
++		      <0x0 0x28005000 0x0 0x1000>;
++		interrupts = <GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_600mhz>;
++		clock-names = "i2s_clk";
++		status = "disabled";
++	};
++
++	can0: can@2800a000 {
++		compatible = "phytium,canfd";
++		reg = <0x0 0x2800a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_200mhz>;
++		clock-names = "can_clk";
++		tx-fifo-depth = <64>;
++		rx-fifo-depth = <64>;
++		status = "disabled";
++	};
++
++	can1: can@2800b000 {
++		compatible = "phytium,canfd";
++		reg = <0x0 0x2800b000 0x0 0x1000>;
++		interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_200mhz>;
++		clock-names = "can_clk";
++		tx-fifo-depth = <64>;
++		rx-fifo-depth = <64>;
++		status = "disabled";
++	};
++
++	keypad: keypad@2807a000 {
++		compatible = "phytium,keypad";
++		reg = <0x0 0x2807a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 189 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++	};
++
++	usb3_0: usb3@31a08000 {
++		compatible = "phytium,pe220x-xhci";
++		reg = <0x0 0x31a08000 0x0 0x18000>;
++		interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	usb3_1: usb3@31a28000 {
++		compatible = "phytium,pe220x-xhci";
++		reg = <0x0 0x31a28000 0x0 0x18000>;
++		interrupts = <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	sata0: sata@31a40000 {
++		compatible = "generic-ahci";
++		reg = <0x0 0x31a40000 0x0 0x1000>;
++		interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	sata1: sata@32014000 {
++		compatible = "generic-ahci";
++		reg = <0x0 0x32014000 0x0 0x1000>;
++		interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	macb0: ethernet@3200c000 {
++		compatible = "cdns,phytium-gem-1.0";
++		reg = <0x0 0x3200c000 0x0 0x2000>;
++		interrupts = <GIC_SPI 55 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 56 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 57 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
++		clock-names = "pclk", "hclk", "tx_clk", "tsu_clk";
++		clocks = <&sysclk_250mhz>, <&sysclk_48mhz>, <&sysclk_48mhz>, <&sysclk_250mhz>;
++		magic-packet;
++		support-tsn;
++		status = "disabled";
++	};
++
++	macb1: ethernet@3200e000 {
++		compatible = "cdns,phytium-gem-1.0";
++		reg = <0x0 0x3200e000 0x0 0x2000>;
++		interrupts = <GIC_SPI 59 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
++		clock-names = "pclk", "hclk", "tx_clk", "tsu_clk";
++		clocks = <&sysclk_250mhz>, <&sysclk_48mhz>, <&sysclk_48mhz>, <&sysclk_250mhz>;
++		magic-packet;
++		status = "disabled";
++	};
++
++	macb2: ethernet@32010000 {
++		compatible = "cdns,phytium-gem-1.0";
++		reg = <0x0 0x32010000 0x0 0x2000>;
++		interrupts = <GIC_SPI 64 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 65 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 66 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>;
++		clock-names = "pclk", "hclk", "tx_clk", "tsu_clk";
++		clocks = <&sysclk_250mhz>, <&sysclk_48mhz>, <&sysclk_48mhz>, <&sysclk_250mhz>;
++		magic-packet;
++		use-mii;
++		status = "disabled";
++	};
++
++	macb3: ethernet@32012000 {
++		compatible = "cdns,phytium-gem-1.0";
++		reg = <0x0 0x32012000 0x0 0x2000>;
++		interrupts = <GIC_SPI 68 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 71 IRQ_TYPE_LEVEL_HIGH>;
++		clock-names = "pclk", "hclk", "tx_clk", "tsu_clk";
++		clocks = <&sysclk_250mhz>, <&sysclk_48mhz>, <&sysclk_48mhz>, <&sysclk_250mhz>;
++		magic-packet;
++		use-mii;
++		status = "disabled";
++	};
++};
+diff --git a/arch/arm64/boot/dts/phytium/pe2204.dtsi b/arch/arm64/boot/dts/phytium/pe2204.dtsi
+new file mode 100644
+index 000000000..201a01e75
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/pe2204.dtsi
+@@ -0,0 +1,223 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * dts file for Phytium Pe2204 SoC
++ *
++ * Copyright (c) 2022-2023 Phytium Technology Co., Ltd.
++ */
++
++#include "pe220x.dtsi"
++
++/ {
++	compatible = "phytium,pe2204";
++
++	aliases {
++		ethernet0 = &macb0;
++		ethernet1 = &macb1;
++		ethernet2 = &macb2;
++		ethernet3 = &macb3;
++	};
++};
++
++&cpu {
++	cpu-map {
++		cluster0 {
++			core0 {
++				cpu = <&cpu_b0>;
++			};
++		};
++
++		cluster1 {
++			core0 {
++				cpu = <&cpu_b1>;
++			};
++		};
++
++		cluster2 {
++			core0 {
++				cpu = <&cpu_l0>;
++			};
++
++			core1 {
++				cpu = <&cpu_l1>;
++			};
++		};
++	};
++
++	cpu_l0: cpu@0 {
++		device_type = "cpu";
++		compatible = "phytium,ftc310", "arm,armv8";
++		reg = <0x0 0x200>;
++		enable-method = "psci";
++		clocks = <&scmi_dvfs 2>;
++		capacity-dmips-mhz = <2850>;
++	};
++
++	cpu_l1: cpu@1 {
++		device_type = "cpu";
++		compatible = "phytium,ftc310", "arm,armv8";
++		reg = <0x0 0x201>;
++		enable-method = "psci";
++		clocks = <&scmi_dvfs 2>;
++		capacity-dmips-mhz = <2850>;
++	};
++
++	cpu_b0: cpu@100 {
++		device_type = "cpu";
++		compatible = "phytium,ftc664", "arm,armv8";
++		reg = <0x0 0x0>;
++		enable-method = "psci";
++		clocks = <&scmi_dvfs 0>;
++		capacity-dmips-mhz = <5660>;
++	};
++
++	cpu_b1: cpu@101 {
++		device_type = "cpu";
++		compatible = "phytium,ftc664", "arm,armv8";
++		reg = <0x0 0x100>;
++		enable-method = "psci";
++		clocks = <&scmi_dvfs 1>;
++		capacity-dmips-mhz = <5660>;
++	};
++};
++
++&soc {
++	hda0: hda@28006000 {
++		compatible = "phytium,hda";
++		reg = <0x0 0x28006000 0x0 0x1000>;
++		interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	i2s0: i2s@28009000 {
++		compatible = "phytium,i2s";
++		reg = <0x0 0x28009000 0x0 0x1000>,
++		      <0x0 0x28005000 0x0 0x1000>;
++		interrupts = <GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_600mhz>;
++		clock-names = "i2s_clk";
++		status = "disabled";
++	};
++
++	can0: can@2800a000 {
++		compatible = "phytium,canfd";
++		reg = <0x0 0x2800a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_200mhz>;
++		clock-names = "can_clk";
++		tx-fifo-depth = <64>;
++		rx-fifo-depth = <64>;
++		status = "disabled";
++	};
++
++	can1: can@2800b000 {
++		compatible = "phytium,canfd";
++		reg = <0x0 0x2800b000 0x0 0x1000>;
++		interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_200mhz>;
++		clock-names = "can_clk";
++		tx-fifo-depth = <64>;
++		rx-fifo-depth = <64>;
++		status = "disabled";
++	};
++
++	keypad: keypad@2807a000 {
++		compatible = "phytium,keypad";
++		reg = <0x0 0x2807a000 0x0 0x1000>;
++		interrupts = <GIC_SPI 189 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		status = "disabled";
++	};
++
++	usb3_0: usb3@31a08000 {
++		compatible = "phytium,pe220x-xhci";
++		reg = <0x0 0x31a08000 0x0 0x18000>;
++		interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	usb3_1: usb3@31a28000 {
++		compatible = "phytium,pe220x-xhci";
++		reg = <0x0 0x31a28000 0x0 0x18000>;
++		interrupts = <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	sata0: sata@31a40000 {
++		compatible = "generic-ahci";
++		reg = <0x0 0x31a40000 0x0 0x1000>;
++		interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	sata1: sata@32014000 {
++		compatible = "generic-ahci";
++		reg = <0x0 0x32014000 0x0 0x1000>;
++		interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	macb0: ethernet@3200c000 {
++		compatible = "cdns,phytium-gem-1.0";
++		reg = <0x0 0x3200c000 0x0 0x2000>;
++		interrupts = <GIC_SPI 55 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 56 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 57 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
++		clock-names = "pclk", "hclk", "tx_clk", "tsu_clk";
++		clocks = <&sysclk_250mhz>, <&sysclk_48mhz>, <&sysclk_48mhz>, <&sysclk_250mhz>;
++		magic-packet;
++		support-tsn;
++		status = "disabled";
++	};
++
++	macb1: ethernet@3200e000 {
++		compatible = "cdns,phytium-gem-1.0";
++		reg = <0x0 0x3200e000 0x0 0x2000>;
++		interrupts = <GIC_SPI 59 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
++		clock-names = "pclk", "hclk", "tx_clk", "tsu_clk";
++		clocks = <&sysclk_250mhz>, <&sysclk_48mhz>, <&sysclk_48mhz>, <&sysclk_250mhz>;
++		magic-packet;
++		status = "disabled";
++	};
++
++	macb2: ethernet@32010000 {
++		compatible = "cdns,phytium-gem-1.0";
++		reg = <0x0 0x32010000 0x0 0x2000>;
++		interrupts = <GIC_SPI 64 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 65 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 66 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>;
++		clock-names = "pclk", "hclk", "tx_clk", "tsu_clk";
++		clocks = <&sysclk_250mhz>, <&sysclk_48mhz>, <&sysclk_48mhz>, <&sysclk_250mhz>;
++		magic-packet;
++		status = "disabled";
++	};
++
++	macb3: ethernet@32012000 {
++		compatible = "cdns,phytium-gem-1.0";
++		reg = <0x0 0x32012000 0x0 0x2000>;
++		interrupts = <GIC_SPI 68 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 71 IRQ_TYPE_LEVEL_HIGH>;
++		clock-names = "pclk", "hclk", "tx_clk", "tsu_clk";
++		clocks = <&sysclk_250mhz>, <&sysclk_48mhz>, <&sysclk_48mhz>, <&sysclk_250mhz>;
++		magic-packet;
++		status = "disabled";
++	};
++
++	vpu0: vpu@32b00000 {
++		compatible = "phytium,vpu";
++		reg = <0x0 0x32b00000 0x0 0x20000>;
++		interrupts = <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++};
+diff --git a/arch/arm64/boot/dts/phytium/pe220x.dtsi b/arch/arm64/boot/dts/phytium/pe220x.dtsi
+new file mode 100644
+index 000000000..6b4cbad68
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/pe220x.dtsi
+@@ -0,0 +1,1017 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * dts file for Phytium Pe220x SoC
++ *
++ * Copyright (c) 2021-2023 Phytium Technology Co., Ltd.
++ */
++
++#include <dt-bindings/interrupt-controller/arm-gic.h>
++
++/ {
++	compatible = "phytium,pe220x";
++	interrupt-parent = <&gic>;
++	#address-cells = <2>;
++	#size-cells = <2>;
++
++	aliases {
++		serial0 = &uart0;
++		serial1 = &uart1;
++		serial2 = &uart2;
++		serial3 = &uart3;
++	};
++
++	psci {
++		compatible   = "arm,psci-1.0";
++		method       = "smc";
++		cpu_suspend  = <0xc4000001>;
++		cpu_off      = <0x84000002>;
++		cpu_on       = <0xc4000003>;
++		sys_poweroff = <0x84000008>;
++		sys_reset    = <0x84000009>;
++	};
++
++	firmware {
++		scmi: scmi {
++			compatible = "arm,scmi";
++			mboxes = <&mbox 0>;
++			mbox-names = "tx";
++			shmem = <&cpu_scp_hpri>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			scmi_dvfs: protocol@13 {
++				reg = <0x13>;
++				#clock-cells = <1>;
++			};
++
++			scmi_sensors0: protocol@15 {
++				reg = <0x15>;
++				#thermal-sensor-cells = <1>;
++			};
++		};
++		optee {
++			compatible = "linaro,optee-tz";
++			method = "smc";
++		};
++	};
++
++	thermal-zones {
++		sensor0 {
++			polling-delay-passive = <100>;
++			polling-delay = <1000>;
++			thermal-sensors = <&scmi_sensors0 0>;
++		};
++
++		sensor1 {
++			polling-delay-passive = <100>;
++			polling-delay = <1000>;
++			thermal-sensors = <&scmi_sensors0 1>;
++		};
++	};
++
++	cpu: cpus {
++		#address-cells = <0x2>;
++		#size-cells = <0x0>;
++	};
++
++	gic: interrupt-controller@30800000 {
++		compatible = "arm,gic-v3";
++		#interrupt-cells = <3>;
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++		interrupt-controller;
++		reg = <0x0 0x30800000 0 0x20000>,	/* GICD */
++		      <0x0 0x30880000 0 0x80000>,	/* GICR */
++		      <0x0 0x30840000 0 0x10000>,	/* GICC */
++		      <0x0 0x30850000 0 0x10000>,	/* GICH */
++		      <0x0 0x30860000 0 0x10000>;	/* GICV */
++		interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_LOW>;
++
++		its: gic-its@30820000 {
++			compatible = "arm,gic-v3-its";
++			msi-controller;
++			reg = <0x0 0x30820000 0x0 0x20000>;
++		};
++	};
++
++	pmu {
++		compatible = "arm,armv8-pmuv3";
++		interrupts = <GIC_PPI 7 IRQ_TYPE_LEVEL_LOW>;
++	};
++
++	timer {
++		compatible = "arm,armv8-timer";
++		interrupts = <GIC_PPI 13 IRQ_TYPE_LEVEL_LOW>,
++			     <GIC_PPI 14 IRQ_TYPE_LEVEL_LOW>,
++			     <GIC_PPI 11 IRQ_TYPE_LEVEL_LOW>,
++			     <GIC_PPI 10 IRQ_TYPE_LEVEL_LOW>;
++		clock-frequency = <50000000>;
++	};
++
++	clocks {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		sysclk_48mhz: clk48mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <48000000>;
++		};
++
++		sysclk_50mhz: clk50mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <50000000>;
++		};
++
++		sysclk_100mhz: clk100mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <100000000>;
++		};
++
++		sysclk_200mhz: clk200mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <200000000>;
++		};
++
++		sysclk_250mhz: clk250mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <250000000>;
++		};
++
++		sysclk_300mhz: clk300mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <300000000>;
++		};
++
++		sysclk_600mhz: clk600mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <600000000>;
++		};
++
++		sysclk_1200mhz: clk1200mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <1200000000>;
++		};
++	};
++
++	smmu: iommu@30000000 {
++		compatible = "arm,smmu-v3";
++		reg = <0x0 0x30000000 0x0 0x800000>;
++		interrupts = <GIC_SPI 240 IRQ_TYPE_EDGE_RISING>,
++			     <GIC_SPI 239 IRQ_TYPE_EDGE_RISING>,
++			     <GIC_SPI 236 IRQ_TYPE_EDGE_RISING>,
++			     <GIC_SPI 242 IRQ_TYPE_EDGE_RISING>;
++		interrupt-names = "eventq", "priq", "cmdq-sync", "gerror";
++		dma-coherent;
++		#iommu-cells = <1>;
++	};
++
++	soc: soc {
++		compatible = "simple-bus";
++		#address-cells = <2>;
++		#size-cells = <2>;
++		dma-coherent;
++		ranges;
++
++		mmc0: mmc@28000000 {
++			compatible = "phytium,mci";
++			reg = <0x0 0x28000000 0x0 0x1000>;
++			interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_1200mhz>;
++			clock-names = "phytium_mci_clk";
++			status = "disabled";
++		};
++
++		mmc1: mmc@28001000 {
++			compatible = "phytium,mci";
++			reg = <0x0 0x28001000 0x0 0x1000>;
++			interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_1200mhz>;
++			clock-names = "phytium_mci_clk";
++			status = "disabled";
++		};
++
++		nand0: nand@28002000 {
++			compatible = "phytium,nfc";
++			reg = <0x0 0x28002000 0x0 0x1000>;
++			interrupts = <GIC_SPI 74 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
++		};
++
++		ddma0: ddma@28003000 {
++			compatible = "phytium,ddma";
++			reg = <0x0 0x28003000 0x0 0x1000>;
++			interrupts = <GIC_SPI 75 IRQ_TYPE_LEVEL_HIGH>;
++			#dma-cells = <2>;
++			dma-channels = <8>;
++		};
++
++		ddma1: ddma@28004000 {
++			compatible = "phytium,ddma";
++			reg = <0x0 0x28004000 0x0 0x1000>;
++			interrupts = <GIC_SPI 76 IRQ_TYPE_LEVEL_HIGH>;
++			#dma-cells = <2>;
++			dma-channels = <8>;
++		};
++
++		lbc: lbc@28007000 {
++			compatible = "phytium,local-bus";
++			#address-cells=<2>;
++			#size-cells=<1>;
++			interrupts = <GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>;
++			reg = <0x0 0x28007000 0x0 0x1000>;
++			ranges = <0x0 0x0 0x0 0x10000000 0x1000000
++					  0x1 0x0 0x1 0x80000000 0x1000000
++					  0x2 0x0 0x1 0x90000000 0x1000000
++					  0x3 0x0 0x1 0xA0000000 0x1000000
++					  0x4 0x0 0x1 0xB0000000 0x1000000
++					  0x5 0x0 0x1 0xC0000000 0x1000000
++					  0x6 0x0 0x1 0xD0000000 0x1000000
++					  0x7 0x0 0x1 0xE0000000 0x1000000>;
++			status = "disabled";
++		};
++
++		qspi0: spi@28008000 {
++			compatible = "phytium,qspi";
++			reg = <0x0 0x28008000 0x0     0x1000>,
++			      <0x0        0x0 0x0 0x0fffffff>;
++			reg-names = "qspi", "qspi_mm";
++			clocks = <&sysclk_50mhz>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++
++			flash@0 { /* Note: By default, chip select 0 is for BIOS, so be careful when enabling this node!!! */
++				reg = <0>;
++				spi-rx-bus-width = <1>;
++				spi-max-frequency = <50000000>;
++				status = "disabled";
++			};
++		};
++
++		uart0: uart@2800c000 {
++			compatible = "arm,pl011","arm,primecell";
++			reg = <0x0 0x2800c000 0x0 0x1000>;
++			interrupts = <GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_100mhz &sysclk_100mhz>;
++			clock-names = "uartclk", "apb_pclk";
++			status = "disabled";
++		};
++
++		uart1: uart@2800d000 {
++			compatible = "arm,pl011","arm,primecell";
++			reg = <0x0 0x2800d000 0x0 0x1000>;
++			interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_100mhz &sysclk_100mhz>;
++			clock-names = "uartclk", "apb_pclk";
++			status = "disabled";
++		};
++
++		uart2: uart@2800e000 {
++			compatible = "arm,pl011","arm,primecell";
++			reg = <0x0 0x2800e000 0x0 0x1000>;
++			interrupts = <GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_100mhz &sysclk_100mhz>;
++			clock-names = "uartclk", "apb_pclk";
++			status = "disabled";
++		};
++
++		uart3: uart@2800f000 {
++			compatible = "arm,pl011","arm,primecell";
++			reg = <0x0 0x2800f000 0x0 0x1000>;
++			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_100mhz &sysclk_100mhz>;
++			clock-names = "uartclk", "apb_pclk";
++			status = "disabled";
++		};
++
++		lpc: lpc@28010000 {
++			compatible = "simple-mfd", "syscon";
++			reg = <0x0 0x28010000 0x0 0x1000>;
++			reg-io-width = <4>;
++
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges = <0x0 0x0 0x28010000 0x1000>;
++
++			kcs0: kcs@24 {
++				compatible = "phytium,kcs-bmc";
++				reg = <0x24 0x1>, <0x30 0x1>, <0x3c 0x1>;
++				interrupts = <GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>;
++				status = "disabled";
++			};
++
++			kcs1: kcs@28 {
++				compatible = "phytium,kcs-bmc";
++				reg = <0x28 0x1>, <0x34 0x1>, <0x40 0x1>;
++				interrupts = <GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>;
++				status = "disabled";
++			};
++
++			kcs2: kcs@2c {
++				compatible = "phytium,kcs-bmc";
++				reg = <0x2c 0x1>, <0x38 0x1>, <0x44 0x1>;
++				interrupts = <GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>;
++				status = "disabled";
++			};
++
++			kcs3: kcs@8c {
++				compatible = "phytium,kcs-bmc";
++				reg = <0x8c 0x1>, <0x90 0x1>, <0x94 0x1>;
++				interrupts = <GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>;
++				status = "disabled";
++			};
++
++			bt: bt@48 {
++				compatible = "phytium,bt-bmc";
++				reg = <0x48 0x20>;
++				interrupts = <GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>;
++				status = "disabled";
++			};
++		};
++
++		/* MIO */
++
++		gpio0: gpio@28034000 {
++			compatible = "phytium,gpio";
++			reg = <0x0 0x28034000 0x0 0x1000>;
++			interrupts = <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 118 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 119 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>;
++			gpio-controller;
++			#gpio-cells = <2>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++
++			porta {
++				compatible = "phytium,gpio-port";
++				reg = <0>;
++				ngpios = <16>;
++			};
++		};
++
++		gpio1: gpio@28035000 {
++			compatible = "phytium,gpio";
++			reg = <0x0 0x28035000 0x0 0x1000>;
++			interrupts = <GIC_SPI 124 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 128 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 129 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 130 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 132 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 133 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 135 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 136 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 137 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>;
++			gpio-controller;
++			#gpio-cells = <2>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++
++			porta {
++				compatible = "phytium,gpio-port";
++				reg = <0>;
++				ngpios = <16>;
++			};
++		};
++
++		gpio2: gpio@28036000 {
++			compatible = "phytium,gpio";
++			reg = <0x0 0x28036000 0x0 0x1000>;
++			interrupts = <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 141 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 142 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 144 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 145 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 146 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 147 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 148 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 149 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 150 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 152 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 153 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 155 IRQ_TYPE_LEVEL_HIGH>;
++			gpio-controller;
++			#gpio-cells = <2>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++
++			porta {
++				compatible = "phytium,gpio-port";
++				reg = <0>;
++				ngpios = <16>;
++			};
++		};
++
++		gpio3: gpio@28037000 {
++			compatible = "phytium,gpio";
++			reg = <0x0 0x28037000 0x0 0x1000>;
++			interrupts = <GIC_SPI 156 IRQ_TYPE_LEVEL_HIGH>;
++			gpio-controller;
++			#gpio-cells = <2>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++
++			porta {
++				compatible = "phytium,gpio-port";
++				reg = <0>;
++				ngpios = <16>;
++			};
++		};
++
++		gpio4: gpio@28038000 {
++			compatible = "phytium,gpio";
++			reg = <0x0 0x28038000 0x0 0x1000>;
++			interrupts = <GIC_SPI 157 IRQ_TYPE_LEVEL_HIGH>;
++			gpio-controller;
++			#gpio-cells = <2>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++
++			porta {
++				compatible = "phytium,gpio-port";
++				reg = <0>;
++				ngpios = <16>;
++			};
++		};
++
++		gpio5: gpio@28039000 {
++			compatible = "phytium,gpio";
++			reg = <0x0 0x28039000 0x0 0x1000>;
++			interrupts = <GIC_SPI 158 IRQ_TYPE_LEVEL_HIGH>;
++			gpio-controller;
++			#gpio-cells = <2>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++
++			porta {
++				compatible = "phytium,gpio-port";
++				reg = <0>;
++				ngpios = <16>;
++			};
++		};
++
++		spi0: spi@2803a000 {
++			compatible = "phytium,spi";
++			reg = <0x0 0x2803a000 0x0 0x1000>;
++			interrupts = <GIC_SPI 159 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			num-cs = <4>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		spi1: spi@2803b000 {
++			compatible = "phytium,spi";
++			reg = <0x0 0x2803b000 0x0 0x1000>;
++			interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			num-cs = <4>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		spi2: spi@2803c000 {
++			compatible = "phytium,spi";
++			reg = <0x0 0x2803c000 0x0 0x1000>;
++			interrupts = <GIC_SPI 161 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			num-cs = <4>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		spi3: spi@2803d000 {
++			compatible = "phytium,spi";
++			reg = <0x0 0x2803d000 0x0 0x1000>;
++			interrupts = <GIC_SPI 162 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			num-cs = <4>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		watchdog0: watchdog@28040000 {
++			compatible = "arm,sbsa-gwdt";
++			reg = <0x0 0x28041000 0x0 0x1000>,
++			      <0x0 0x28040000 0x0 0x1000>;
++			interrupts = <GIC_SPI 164 IRQ_TYPE_LEVEL_HIGH>;
++			timeout-sec = <30>;
++			status = "disabled";
++		};
++
++		watchdog1: watchdog@28042000 {
++			compatible = "arm,sbsa-gwdt";
++			reg = <0x0 0x28043000 0x0 0x1000>,
++			      <0x0 0x28042000 0x0 0x1000>;
++			interrupts = <GIC_SPI 165 IRQ_TYPE_LEVEL_HIGH>;
++			timeout-sec = <30>;
++			status = "disabled";
++		};
++
++		pwm0: pwm@2804a000 {
++			compatible = "phytium,pwm";
++			reg = <0x0 0x2804a000 0x0 0x1000>;
++			interrupts = <GIC_SPI 173 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			status = "disabled";
++		};
++
++		pwm1: pwm@2804b000 {
++			compatible = "phytium,pwm";
++			reg = <0x0 0x2804b000 0x0 0x1000>;
++			interrupts = <GIC_SPI 174 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			status = "disabled";
++		};
++
++		tacho0: tacho@28054000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28054000 0x0 0x1000>;
++			interrupts = <GIC_SPI 194 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho1: tacho@28055000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28055000 0x0 0x1000>;
++			interrupts = <GIC_SPI 195 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho2: tacho@28056000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28056000 0x0 0x1000>;
++			interrupts = <GIC_SPI 196 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho3: tacho@28057000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28057000 0x0 0x1000>;
++			interrupts = <GIC_SPI 197 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho4: tacho@28058000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28058000 0x0 0x1000>;
++			interrupts = <GIC_SPI 198 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho5: tacho@28059000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28059000 0x0 0x1000>;
++			interrupts = <GIC_SPI 199 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho6: tacho@2805a000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2805a000 0x0 0x1000>;
++			interrupts = <GIC_SPI 200 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho7: tacho@2805b000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2805b000 0x0 0x1000>;
++			interrupts = <GIC_SPI 201 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho8: tacho@2805c000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2805c000 0x0 0x1000>;
++			interrupts = <GIC_SPI 202 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho9: tacho@2805d000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2805d000 0x0 0x1000>;
++			interrupts = <GIC_SPI 203 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho10: tacho@2805e000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2805e000 0x0 0x1000>;
++			interrupts = <GIC_SPI 204 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho11: tacho@2805f000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2805f000 0x0 0x1000>;
++			interrupts = <GIC_SPI 205 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho12: tacho@28060000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28060000 0x0 0x1000>;
++			interrupts = <GIC_SPI 206 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho13: tacho@28061000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28061000 0x0 0x1000>;
++			interrupts = <GIC_SPI 207 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho14: tacho@28062000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28062000 0x0 0x1000>;
++			interrupts = <GIC_SPI 208 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho15: tacho@28063000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28063000 0x0 0x1000>;
++			interrupts = <GIC_SPI 209 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho16: tacho@28064000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28064000 0x0 0x1000>;
++			interrupts = <GIC_SPI 210 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho17: tacho@28065000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28065000 0x0 0x1000>;
++			interrupts = <GIC_SPI 211 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho18: tacho@28066000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28066000 0x0 0x1000>;
++			interrupts = <GIC_SPI 212 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho19: tacho@28067000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28067000 0x0 0x1000>;
++			interrupts = <GIC_SPI 213 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho20: tacho@28068000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28068000 0x0 0x1000>;
++			interrupts = <GIC_SPI 214 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho21: tacho@28069000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28069000 0x0 0x1000>;
++			interrupts = <GIC_SPI 215 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho22: tacho@2806a000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2806a000 0x0 0x1000>;
++			interrupts = <GIC_SPI 216 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho23: tacho@2806b000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2806b000 0x0 0x1000>;
++			interrupts = <GIC_SPI 217 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho24: tacho@2806c000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2806c000 0x0 0x1000>;
++			interrupts = <GIC_SPI 218 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho25: tacho@2806d000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2806d000 0x0 0x1000>;
++			interrupts = <GIC_SPI 219 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho26: tacho@2806e000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2806e000 0x0 0x1000>;
++			interrupts = <GIC_SPI 220 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho27: tacho@2806f000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x2806f000 0x0 0x1000>;
++			interrupts = <GIC_SPI 221 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho28: tacho@28070000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28070000 0x0 0x1000>;
++			interrupts = <GIC_SPI 222 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho29: tacho@28071000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28071000 0x0 0x1000>;
++			interrupts = <GIC_SPI 223 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho30: tacho@28072000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28072000 0x0 0x1000>;
++			interrupts = <GIC_SPI 224 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho31: tacho@28073000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28073000 0x0 0x1000>;
++			interrupts = <GIC_SPI 225 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho32: tacho@28074000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28074000 0x0 0x1000>;
++			interrupts = <GIC_SPI 226 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho33: tacho@28075000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28075000 0x0 0x1000>;
++			interrupts = <GIC_SPI 227 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho34: tacho@28076000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28076000 0x0 0x1000>;
++			interrupts = <GIC_SPI 228 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho35: tacho@28077000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28077000 0x0 0x1000>;
++			interrupts = <GIC_SPI 229 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho36: tacho@28078000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28078000 0x0 0x1000>;
++			interrupts = <GIC_SPI 230 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		tacho37: tacho@28079000 {
++			compatible = "phytium,tacho";
++			reg = <0x0 0x28079000 0x0 0x1000>;
++			interrupts = <GIC_SPI 231 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz >;
++			status = "disabled";
++		};
++
++		usb2_0: usb2@31800000 { /* usb_vhub0 USB2_P2 only otg mode */
++			compatible = "phytium,usb2";
++			reg = <0x0 0x31800000 0x0 0x80000>,
++			      <0x0 0x31990000 0x0 0x10000>;
++			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
++		};
++
++		usb2_1: usb2@31880000 { /* usb_vhub1 USB2_P2 */
++			compatible = "phytium,usb2";
++			reg = <0x0 0x31880000 0x0 0x80000>,
++			      <0x0 0x319a0000 0x0 0x10000>;
++			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
++		};
++
++		usb2_2: usb2@31900000 { /* usb_vhub2 USB2_P2 */
++			compatible = "phytium,usb2";
++			reg = <0x0 0x31900000 0x0 0x80000>,
++			      <0x0 0x319b0000 0x0 0x10000>;
++			interrupts = <GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
++		};
++
++		usb2_3: usb2@32800000 { /* USB2_0 controller registers USB2_P3 */
++			compatible = "phytium,usb2";
++			reg = <0x0 0x32800000 0x0 0x40000>,
++			      <0x0 0x32880000 0x0 0x40000>; /* USB2_0 UIB registers */
++			interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
++		};
++
++		usb2_4: usb2@32840000 { /* USB2_1 controller registers USB2_P4 */
++			compatible = "phytium,usb2";
++			reg = <0x0 0x32840000 0x0 0x40000>,
++			      <0x0 0x328c0000 0x0 0x40000>; /* USB2_1 UIB registers */
++			interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
++		};
++
++		dc0: dc@32000000 {
++			compatible = "phytium,dc";
++			reg = <0x0 0x32000000 0x0 0x8000>;
++			interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
++		};
++
++		i2s_dp0: i2s_dp0@32009000 {
++			compatible = "phytium,i2s";
++			reg = <0x0 0x32009000 0x0 0x1000>,
++			      <0x0 0x32008000 0x0 0x1000>;
++			interrupts = <GIC_SPI 47 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_600mhz>;
++			clock-names = "i2s_clk";
++			dai-name = "phytium-i2s-dp0";
++			status = "disabled";
++		};
++
++		i2s_dp1: i2s_dp1@3200B000 {
++			compatible = "phytium,i2s";
++			reg = <0x0 0x3200B000 0x0 0x1000>,
++			      <0x0 0x3200A000 0x0 0x1000>;
++			interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_600mhz>;
++			clock-names = "i2s_clk";
++			dai-name = "phytium-i2s-dp1";
++			status = "disabled";
++		};
++
++		pmdk_dp: pmdk_dp {
++			compatible = "phytium,pmdk-dp";
++			status = "disabled";
++		};
++
++		mbox: mailbox@32a00000 {
++			compatible = "phytium,mbox";
++			reg = <0x0 0x32a00000 0x0 0x1000>;
++			interrupts = <GIC_SPI 22 IRQ_TYPE_LEVEL_HIGH>;
++			#mbox-cells = <1>;
++		};
++
++		rng0: rng@32a36000 {
++			compatible = "phytium,rng";
++			reg = <0x0 0x32a36000 0x0 0x1000>;
++			status = "disabled";
++		};
++
++		sram: sram@32a10000 {
++			compatible = "phytium,pe220x-sram-ns", "mmio-sram";
++			reg = <0x0 0x32a10000 0x0 0x2000>;
++
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges = <0x0 0x0 0x32a10000 0x2000>;
++
++			cpu_scp_lpri: scp-shmem@0 {
++				compatible = "arm,scmi-shmem";
++				reg = <0x1000 0x400>;
++			};
++
++			cpu_scp_hpri: scp-shmem@1 {
++				compatible = "arm,scmi-shmem";
++				reg = <0x1400 0x400>;
++			};
++		};
++
++		hwspinlock: spinlock@32b36000 {
++			compatible = "phytium,hwspinlock";
++			reg = <0x0 0x32b36000 0x0 0x1000>;
++			#hwlock-cells = <1>;
++			nr-locks = <32>;
++			status = "disabled";
++		};
++
++		pcie: pcie@40000000 {
++			compatible = "pci-host-ecam-generic";
++			device_type = "pci";
++			#address-cells = <3>;
++			#size-cells = <2>;
++			#interrupt-cells = <1>;
++			reg = <0x0 0x40000000 0x0 0x10000000>;
++			msi-parent = <&its>;
++			bus-range = <0x0 0xff>;
++			interrupt-map-mask = <0x0 0x0 0x0 0x7>;
++			interrupt-map = <0x0 0x0 0x0 0x1 &gic 0x0 0x0 GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>,
++					<0x0 0x0 0x0 0x2 &gic 0x0 0x0 GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>,
++					<0x0 0x0 0x0 0x3 &gic 0x0 0x0 GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
++					<0x0 0x0 0x0 0x4 &gic 0x0 0x0 GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
++			ranges = <0x01000000 0x00 0x00000000 0x0  0x50000000  0x0  0x00f00000>,
++				 <0x02000000 0x00 0x58000000 0x0  0x58000000  0x0  0x28000000>,
++				 <0x03000000 0x10 0x00000000 0x10 0x00000000 0x10  0x00000000>;
++			iommu-map = <0x0 &smmu 0x0 0x10000>;
++			status = "disabled";
++		};
++
++		edac: edac@32b28000 {
++			compatible = "phytium,pe220x-edac";
++			reg = <0x0 0x32b28000 0x0 0x1000>,
++				<0x0 0x31400000 0x0 0x1000>,
++				<0x0 0x31401000 0x0 0x1000>;
++			interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/phytium/phytiumpi_firefly.dts b/arch/arm64/boot/dts/phytium/phytiumpi_firefly.dts
+new file mode 100644
+index 000000000..0939508f8
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/phytiumpi_firefly.dts
+@@ -0,0 +1,320 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Pi development board.
++ *
++ * Copyright (c) 2023 Phytium Technology Co., Ltd.
++ *
++ * Shaojun Yang <yangshaojun@phytium.com.cn>
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "pe2204.dtsi"
++
++/{
++	model = "Phytium Pi Board";
++	compatible = "phytium,pe2204";
++
++	chosen {
++		stdout-path = "serial1:115200n8";
++	};
++	aliases {
++		serial4 = &mio0;
++		serial5 = &mio11;
++		serial6 = &mio15;
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x2 0x00000000>;
++	};
++
++	leds {
++		compatible = "gpio-leds";
++		sysled {
++			label = "sysled";
++			gpios = <&gpio1 5 0>;
++			linux,default-trigger = "none";
++		};
++	};
++
++	sound_card: sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,name = "phytium,pe220x-i2s-audio";
++		simple-audio-card,pin-switches = "mic-in";
++		simple-audio-card,widgets = "Microphone","mic-in";
++		simple-audio-card,routing = "MIC2","mic-in";
++		simple-audio-card,cpu {
++			sound-dai = <&i2s0>;
++		};
++		simple-audio-card,codec{
++			sound-dai = <&codec0>;
++		};
++	};
++};
++
++&soc {
++	mio9: i2c@28026000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28026000 0x0 0x1000>;
++		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++	};
++
++	mio14: i2c@28030000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28030000 0x0 0x1000>;
++		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++
++		codec0: es8336@10 {
++			det-gpios = <&gpio2 11 0>;
++			sel-gpios = <&gpio2 7 0>;
++			#sound-dai-cells = <0>;
++			compatible = "everest,es8336";
++			reg = <0x10>;
++		};
++	};
++
++
++	mio0: uart@28014000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28014000 0x0 0x1000>;
++		interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio1: i2c@28016000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28016000 0x0 0x1000>;
++		interrupts = <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++	};
++
++	mio8: i2c@28024000 {
++		compatible = "phytium,i2c";
++		reg = <0x0 0x28024000 0x0 0x1000>;
++		interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		status = "okay";
++	};
++
++	mio11: uart@2802A000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x2802A000 0x0 0x1000>;
++		interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++
++	mio15: uart@28032000 {
++		compatible = "arm,pl011","arm,primecell";
++		reg = <0x0 0x28032000 0x0 0x1000>;
++		interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&sysclk_50mhz &sysclk_50mhz>;
++		clock-names = "uartclk", "apb_pclk";
++		status = "okay";
++	};
++};
++
++&gpio0 {
++	status = "okay";
++};
++
++&gpio1 {
++	status = "okay";
++};
++
++&gpio2 {
++	status = "okay";
++};
++
++&gpio3 {
++	status = "okay";
++};
++
++&gpio4 {
++	status = "okay";
++};
++
++&gpio5 {
++	status = "okay";
++};
++
++&watchdog0 {
++	status = "okay";
++};
++
++&watchdog1 {
++	status = "okay";
++};
++
++&pcie {
++	status = "okay";
++};
++
++&usb3_0 {
++	status = "okay";
++};
++
++&usb3_1 {
++	status = "okay";
++};
++
++&usb2_0 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_1 {
++	dr_mode = "peripheral";
++	status = "disabled";
++};
++
++&usb2_2 {
++	dr_mode = "peripheral";
++	status = "disabled";
++};
++
++&usb2_3 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usb2_4 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&macb0 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&macb1 {
++	phy-mode = "sgmii";
++	use-mii;
++	status = "okay";
++};
++
++&dc0 {
++	pipe_mask = /bits/ 8 <0x1>;
++	edp_mask = /bits/ 8 <0x0>;
++	status = "okay";
++};
++
++&i2s0 {
++	#sound-dai-cells = <0>;
++	dai-name = "phytium-i2s-lsd";
++	status = "okay";
++};
++
++&i2s_dp0 {
++	dai-name = "phytium-i2s-dp0";
++	status = "okay";
++};
++
++&qspi0 {
++	status = "okay";
++
++	flash@0 {
++		status = "okay";
++	};
++};
++
++&spi0 {
++	global-cs = <1>;
++	status = "okay";
++
++	spidev0: spidev@0 {
++		compatible = "spidev";
++		reg = <0>;
++		spi-max-frequency = <50000000>;
++		status = "disabled";
++	};
++};
++
++&mmc0 {
++	bus-width = <0x00000004>;
++	max-frequency = <50000000>;
++	cap-sdio-irq;
++	cap-sd-highspeed;
++	no-mmc;
++	status = "okay";
++};
++
++&mmc1 {
++	bus-width = <0x00000004>;
++	max-frequency = <25000000>;
++	cap-sdio-irq;
++	cap-sd-highspeed;
++	no-mmc;
++	no-sd;
++	non-removable;
++	status = "okay";
++};
++
++&pwm0 {
++	phytium,db = <0 0 100 1000 1000 0>;
++	status = "okay";
++};
++
++&pwm1 {
++	phytium,db = <0 0 100 1000 1000 0>;
++	status = "okay";
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&uart3 {
++	status = "okay";
++};
++
++&can0 {
++	status = "okay";
++};
++
++&can1 {
++	status = "okay";
++};
++
++&pmdk_dp {
++	num-dp = <1>;
++	dp-mask = /bits/ 8 <0x1>;
++	status = "okay";
++};
++
++&rng0 {
++	status = "okay";
++};
++
++&vpu0 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/phytium/ps2316-devboard-16c-dsk.dts b/arch/arm64/boot/dts/phytium/ps2316-devboard-16c-dsk.dts
+new file mode 100644
+index 000000000..036d293d2
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/ps2316-devboard-16c-dsk.dts
+@@ -0,0 +1,99 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DTS file for Phytium Ps2316 devboard
++ *
++ * Copyright (C) 2023, Phytium Technology Co., Ltd.
++ */
++
++/dts-v1/;
++/memreserve/ 0x80000000 0x10000;
++
++#include "ps2316-generic-psci-soc.dtsi"
++
++/{
++	model = "Ps2316 Development Board";
++	compatible = "phytium,ps2316";
++	#address-cells = <2>;
++	#size-cells = <2>;
++
++	chosen {
++		stdout-path = "uart1:115200n8";
++	};
++
++	memory@00{
++		device_type = "memory";
++		reg = <0x0 0x80000000 0x1 0x00000000>;
++	};
++};
++
++
++&uart0 {
++	status = "ok";
++};
++
++&uart1 {
++	status = "ok";
++};
++
++&uart2 {
++	status = "ok";
++};
++
++&i2c0 {
++	status = "ok";
++};
++
++&i2c1 {
++	status = "ok";
++
++	rtc@68 {
++		compatible = "dallas,ds1339";
++		reg = <0x68>;
++	};
++};
++
++&i2c2 {
++	status = "ok";
++};
++
++&qspi0 {
++	status = "ok";
++};
++
++&spi0 {
++	status = "ok";
++
++	 spidev0: spidev@0 {
++		compatible = "rohm,dh2228fv";
++		reg = <0>;
++		spi-max-frequency = <50000000>;
++	 };
++};
++
++&spi1 {
++	status = "ok";
++};
++
++&gpio0 {
++	status = "ok";
++};
++
++&pmbus {
++	status = "ok";
++};
++
++&avsbus {
++	status = "ok";
++};
++
++&i3c {
++	status = "ok";
++};
++
++&watchdog0 {
++	status = "ok";
++};
++
++&watchdog1 {
++	status = "ok";
++};
+diff --git a/arch/arm64/boot/dts/phytium/ps2316-generic-psci-soc.dtsi b/arch/arm64/boot/dts/phytium/ps2316-generic-psci-soc.dtsi
+new file mode 100644
+index 000000000..7766b4315
+--- /dev/null
++++ b/arch/arm64/boot/dts/phytium/ps2316-generic-psci-soc.dtsi
+@@ -0,0 +1,583 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * dts file for Phytium Ps2316 SoC
++ *
++ * Copyright (C) 2023, Phytium Technology Co., Ltd.
++ */
++
++#include <dt-bindings/interrupt-controller/arm-gic.h>
++
++/ {
++	compatible = "phytium,ps2316";
++	interrupt-parent = <&gic>;
++	#address-cells = <2>;
++	#size-cells = <2>;
++
++	psci {
++		compatible   = "arm,psci-1.0";
++		method       = "smc";
++		cpu_suspend  = <0xc4000001>;
++		cpu_off      = <0x84000002>;
++		cpu_on       = <0xc4000003>;
++		sys_poweroff = <0x84000008>;
++		sys_reset    = <0x84000009>;
++	};
++
++	cpus {
++		#address-cells = <0x2>;
++		#size-cells = <0x0>;
++
++		cpu-map {
++
++			cluster0 {
++
++				core0 {
++					cpu = <0x3>;
++				};
++
++				core1 {
++					cpu = <0x4>;
++				};
++			};
++
++			cluster1 {
++
++				core0 {
++					cpu = <0x5>;
++				};
++
++				core1 {
++					cpu = <0x6>;
++				};
++			};
++
++			cluster2 {
++
++				core0 {
++					cpu = <0x7>;
++				};
++
++				core1 {
++					cpu = <0x8>;
++				};
++			};
++
++			cluster3 {
++
++				core0 {
++					cpu = <0x9>;
++				};
++
++				core1 {
++					cpu = <0xa>;
++				};
++			};
++
++			cluster4 {
++
++				core0 {
++					cpu = <0xb>;
++				};
++
++				core1 {
++					cpu = <0xc>;
++				};
++			};
++
++			cluster5 {
++
++				core0 {
++					cpu = <0xd>;
++				};
++
++				core1 {
++					cpu = <0xe>;
++				};
++			};
++
++			cluster6 {
++
++				core0 {
++					cpu = <0xf>;
++				};
++
++				core1 {
++					cpu = <0x10>;
++				};
++			};
++
++			cluster7 {
++
++				core0 {
++					cpu = <0x11>;
++				};
++
++				core1 {
++					cpu = <0x12>;
++				};
++			};
++		};
++
++		cpu@0 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0x0>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0x3>;
++		};
++
++		cpu@1 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0x10000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0x4>;
++		};
++
++		cpu@2 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0x20000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0x5>;
++		};
++
++		cpu@3 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0x30000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0x6>;
++		};
++
++		cpu@4 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0x40000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0x7>;
++		};
++
++		cpu@5 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0x50000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0x8>;
++		};
++
++		cpu@6 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0x60000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0x9>;
++		};
++
++		cpu@7 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0x70000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0xa>;
++		};
++
++		cpu@8 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0x80000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0xb>;
++		};
++
++		cpu@9 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0x90000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0xc>;
++		};
++
++		cpu@10 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0xa0000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0xd>;
++		};
++
++		cpu@11 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0xb0000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0xe>;
++		};
++
++		cpu@12 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0xc0000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0xf>;
++		};
++
++		cpu@13 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0xd0000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0x10>;
++		};
++
++		cpu@14 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0xe0000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0x11>;
++		};
++
++		cpu@15 {
++			device_type = "cpu";
++			compatible = "arm,armv8";
++			reg = <0x0 0xf0000>;
++			enable-method = "psci";
++			numa-node-id = <0>;
++			phandle = <0x12>;
++		};
++	};
++#if 0
++	smmu0: iommu@3b200000 {
++		compatible = "arm,smmu-v3";
++		reg = <0x0 0x3b200000 0x0 0x200000>;
++		interrupts = <GIC_SPI 62 IRQ_TYPE_EDGE_RISING>,
++					 <GIC_SPI 90 IRQ_TYPE_EDGE_RISING>,
++					 <GIC_SPI 61 IRQ_TYPE_EDGE_RISING>,
++					 <GIC_SPI 89 IRQ_TYPE_EDGE_RISING>;
++		interrupt-names = "eventq", "priq", "cmdq-sync", "gerror";
++		dma-coherent;
++		#iommu-cells = <1>;
++		//msi-parent = <&its2>;
++	};
++
++	smmu1: iommu@3a200000 {
++		compatible = "arm,smmu-v3";
++		reg = <0x0 0x3a200000 0x0 0x200000>;
++		interrupts = <GIC_SPI 70 IRQ_TYPE_EDGE_RISING>,
++					 <GIC_SPI 92 IRQ_TYPE_EDGE_RISING>,
++					 <GIC_SPI 69 IRQ_TYPE_EDGE_RISING>,
++					 <GIC_SPI 91 IRQ_TYPE_EDGE_RISING>;
++		interrupt-names = "eventq", "priq", "cmdq-sync", "gerror";
++		dma-coherent;
++		#iommu-cells = <1>;
++		//msi-parent = <&its0>;
++	};
++
++	smmu2: iommu@3aa00000 {
++		compatible = "arm,smmu-v3";
++		reg = <0x0 0x3aa00000 0x0 0x200000>;
++		interrupts = <GIC_SPI 78 IRQ_TYPE_EDGE_RISING>,
++					 <GIC_SPI 94 IRQ_TYPE_EDGE_RISING>,
++					 <GIC_SPI 77 IRQ_TYPE_EDGE_RISING>,
++					 <GIC_SPI 93 IRQ_TYPE_EDGE_RISING>;
++		interrupt-names = "eventq", "priq", "cmdq-sync", "gerror";
++		dma-coherent;
++		#iommu-cells = <1>;
++		//msi-parent = <&its1>;
++	};
++#endif
++	gic: interrupt-controller@22000000 {
++		compatible = "arm,gic-v3";
++		#interrupt-cells = <0x3>;
++		#address-cells = <0x2>;
++		#size-cells = <0x2>;
++		ranges;
++		interrupt-controller;
++		reg = <0x0 0x22000000 0 0x10000>,	/* GICD */
++              <0x0 0x220c0000 0 0x200000>;	/* GICR */
++		interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
++
++		its0: gic-its@22040000 {
++			compatible = "arm,gic-v3-its";
++			msi-controller;
++			reg = <0x0 0x22040000 0x0 0x20000>;
++		};
++
++		its1: gic-its@22060000 {
++			compatible = "arm,gic-v3-its";
++			msi-controller;
++			reg = <0x0 0x22060000 0x0 0x20000>;
++		};
++
++		its2: gic-its@22080000 {
++			compatible = "arm,gic-v3-its";
++			msi-controller;
++			reg = <0x0 0x22080000 0x0 0x20000>;
++		};
++
++		its3: gic-its@220a0000 {
++			compatible = "arm,gic-v3-its";
++			msi-controller;
++			reg = <0x0 0x220a0000 0x0 0x20000>;
++		};
++
++	};
++
++	timer {
++		compatible = "arm,armv8-timer";
++		interrupts = <GIC_PPI 13 IRQ_TYPE_LEVEL_LOW>,
++			     <GIC_PPI 14 IRQ_TYPE_LEVEL_LOW>,
++			     <GIC_PPI 11 IRQ_TYPE_LEVEL_LOW>,
++			     <GIC_PPI 10 IRQ_TYPE_LEVEL_LOW>;
++		clock-frequency = <1000000000>;
++	};
++
++	clocks {
++		#address-cells = <0x2>;
++		#size-cells = <0x2>;
++		ranges;
++
++		sysclk_50mhz: clk50mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0x0>;
++			clock-frequency = <0x2faf080>;
++		};
++
++		sysclk_100mhz: clk100mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0x0>;
++			clock-frequency = <100000000>;
++		};
++
++		sysclk_500mhz: clk500mhz {
++			compatible = "fixed-clock";
++			#clock-cells = <0x0>;
++			clock-frequency = <500000000>;
++		};
++	};
++
++	soc {
++		compatible = "simple-bus";
++		#address-cells = <2>;
++		#size-cells = <2>;
++		dma-coherent;
++		ranges;
++
++		qspi0: spi@1a100000 {
++			compatible = "phytium,qspi-nor";
++			reg = <0x0 0x1a100000 0x0	  0x1000>,
++				  <0x0		  0x0 0x0 0x07ffffff>;
++			reg-names = "qspi", "qspi_mm";
++			clocks = <&sysclk_500mhz>;
++			status = "disabled";
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			flash@0 {
++				compatible = "jedec,spi-nor";
++				reg = <0x00>;
++				spi-rx-bus-width = <4>;
++				spi-max-frequency = <5000000>;
++			};
++		};
++
++		watchdog0: watchdog@1a102000 {
++			compatible = "arm,sbsa-gwdt";
++			reg = <0x0 0x1a103000 0x0 0x1000>,
++			      <0x0 0x1a102000 0x0 0x1000>;
++			interrupts = <GIC_SPI 18 IRQ_TYPE_LEVEL_HIGH>;
++			timeout-sec = <30>;
++			status = "disabled";
++		};
++
++		watchdog1: watchdog@1a104000 {
++			compatible = "arm,sbsa-gwdt";
++			reg = <0x0 0x1a105000 0x0 0x1000>,
++			      <0x0 0x1a104000 0x0 0x1000>;
++			interrupts = <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
++			timeout-sec = <30>;
++			status = "disabled";
++		};
++
++		uart0: uart@20000000 {
++			compatible = "arm,pl011", "arm,primecell";
++			reg = <0x0 0x20000000 0x0 0x1000>;
++			baud = <115200>;
++			reg-shift = <0x2>;
++			reg-io-width = <0x4>;
++			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz &sysclk_50mhz>;
++			clock-names = "uartclk", "apb_pclk";
++			status = "disabled";
++		};
++
++		uart1: uart@20001000 {
++			compatible = "arm,pl011", "arm,primecell";
++			reg = <0x0 0x20001000 0x0 0x1000>;
++			baud = <115200>;
++			reg-shift = <0x2>;
++			reg-io-width = <0x4>;
++			interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz &sysclk_50mhz>;
++			clock-names = "uartclk", "apb_pclk";
++			status = "disabled";
++		};
++
++		uart2: uart@20002000 {
++			compatible = "arm,pl011", "arm,primecell";
++			reg = <0x0 0x20002000 0x0 0x1000>;
++			baud = <115200>;
++			reg-shift = <0x2>;
++			reg-io-width = <0x4>;
++			interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz &sysclk_50mhz>;
++			clock-names = "uartclk", "apb_pclk";
++			status = "disabled";
++		};
++
++		i2c0: i2c@20003000 {
++			compatible = "phytium,i2c";
++			reg = <0x0 0x20003000 0x0 0x1000>;
++			interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		i2c1: i2c@20004000 {
++			compatible = "phytium,i2c";
++			reg = <0x0 0x20004000 0x0 0x1000>;
++			interrupts = <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		i2c2: i2c@20005000 {
++			compatible = "phytium,i2c";
++			reg = <0x0 0x20005000 0x0 0x1000>;
++			interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		spi0: spi@20006000 {
++			compatible = "phytium,spi";
++			reg = <0x0 0x20006000 0x0 0x1000>;
++			interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			num-cs = <4>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		spi1: spi@20007000 {
++			compatible = "phytium,spi";
++			reg = <0x0 0x20007000 0x0 0x1000>;
++			interrupts = <GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			num-cs = <4>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		gpio0: gpio@2000a000 {
++			compatible = "phytium,gpio";
++			reg = <0x0 0x2000a000 0x0 0x1000>;
++			interrupts = <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
++			gpio-controller;
++			#gpio-cells = <2>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++
++			porta {
++				compatible = "phytium,gpio-port";
++				reg = <0>;
++				nr-gpios = <32>;
++			};
++		};
++
++		pmbus: i2c@20008000 {
++			compatible = "phytium,i2c";
++			reg = <0x0 0x20008000 0x0 0x1000>;
++			interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		avsbus: i2c@20009000 {
++			compatible = "phytium,i2c";
++			reg = <0x0 0x20009000 0x0 0x1000>;
++			interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_50mhz>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		i3c: i3c-master@21000000 {
++			compatible = "phytium,cdns-i3c-master";
++			reg = <0x0 0x21000000 0x0 0x1000>;
++			interrupts = <GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&sysclk_100mhz>, <&sysclk_100mhz>;
++			clock-names = "pclk", "sysclk";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			i2c-scl-hz = <400000>;
++			i3c-scl-hz = <1000000>;
++			status = "disabled";
++		};
++
++	};
++	pcie@40000000 {
++		compatible = "pci-host-ecam-generic";
++		device_type = "pci";
++		#address-cells = <0x3>;
++		#size-cells = <0x2>;
++		#interrupt-cells = <0x1>;
++		reg = <0x0 0x40000000 0x0 0x10000000>;
++		msi-map = <0x0 &its2 0x0 0x8>,
++				  <0x8 &its3 0x0 0x20>,
++				  <0x28 &its0 0x0 0x10>,
++				  <0x38 &its1 0x0 0x10>;
++		bus-range = <0x0 0xff>;
++		interrupt-map-mask = <0x0 0x0 0x0 0x7>;
++		interrupt-map = <0x0 0x0 0x0 0x1 &gic 0x0 0x0 0x0 54 0x4>,
++					<0x0 0x0 0x0 0x2 &gic 0x0 0x0 0x0 53 0x4>,
++					<0x0 0x0 0x0 0x3 &gic 0x0 0x0 0x0 52 0x4>,
++					<0x0 0x0 0x0 0x4 &gic 0x0 0x0 0x0 51 0x4>;
++		ranges = <0x01000000 0x00 0x00000000 0x00  0x50000000 0x00	0x00F00000>,
++			 <0x02000000 0x00 0x58000000 0x00  0x58000000 0x00	0x08000000>,
++			 <0x43000000 0x400 0x00000000 0x400 0x00000000 0x100  0x00000000>;
++		//iommu-map = <0x100 &smmu0 0x100 0x100>,
++		//			<0x600 &smmu1 0x600 0x200>,
++		//			<0x800 &smmu2 0x800 0x200>;
++		status = "okay";
++	//};
++	};
++};
+diff --git a/include/dt-bindings/bus/phytium-local-bus.h b/include/dt-bindings/bus/phytium-local-bus.h
+new file mode 100755
+index 000000000..e8e7a27be
+--- /dev/null
++++ b/include/dt-bindings/bus/phytium-local-bus.h
+@@ -0,0 +1,104 @@
++#ifndef _DT_BINDINGS_PHYTIUM_LOCAL_BUS_H
++#define _DT_BINDINGS_PHYTIUM_LOCAL_BUS_H
++
++/* device list param */
++
++/* param 0, CS */
++
++/* param 1, machine_sel */
++#define LBC_NOR_CM 1
++#define LBC_GPCM 2
++#define LBC_SSCM 3
++
++/* param 2, TIM0 */
++/* TIM0 NOR */
++#define NOR_TACSEX_OFST (16)
++#define NOR_TACSEX_MASK (0xF)
++#define NOR_TACSEX(x) (((x) & NOR_TACSEX_MASK) << NOR_TACSEX_OFST)
++
++#define NOR_TEADCX_OFST (10)
++#define NOR_TEADCX_MASK (0x3F)
++#define NOR_TEADCX(x) (((x) & NOR_TEADCX_MASK) << NOR_TEADCX_OFST)
++
++#define NOR_TCESX_OFST (6)
++#define NOR_TCESX_MASK (0xF)
++#define NOR_TCESX(x)  (((x) & NOR_TCESX_MASK) << NOR_TCESX_OFST)
++
++#define NOR_TEAHCX_OFST (0)
++#define NOR_TEAHCX_MASK (0x3F)
++#define NOR_TEAHCX(x) (((x) & NOR_TEAHCX_MASK) << NOR_TEAHCX_OFST)
++
++/* TIM0 GPCM */
++#define GPCM_TACSEX_OFST (12)
++#define GPCM_TACSEX_MASK (0xF)
++#define GPCM_TACSEX(x) (((x) & GPCM_TACSEX_MASK) << GPCM_TACSEX_OFST)
++
++#define GPCM_TEADCX_OFST (6)
++#define GPCM_TEADCX_MASK (0x3F)
++#define GPCM_TEADCX(x) (((x) & GPCM_TEADCX_MASK) << GPCM_TEADCX_OFST)
++
++#define GPCM_TEAHCX_OFST (0)
++#define GPCM_TEAHCX_MASK (0x3F)
++#define GPCM_TEAHCX(x) (((x) & GPCM_TEAHCX_MASK) << GPCM_TEAHCX_OFST)
++
++
++/* param 3, TIM1 */
++/* TIM1 NOR */
++#define NOR_TACOX_OFST (16)
++#define NOR_TACOX_MASK (0xFF)
++#define NOR_TACOX(x) (((x) & NOR_TACOX_MASK) << NOR_TACOX_OFST)
++
++#define NOR_TRADX_OFST (8)
++#define NOR_TRADX_MASK (0xFF)
++#define NOR_TRADX(x) (((x) & NOR_TRADX_MASK) << NOR_TRADX_OFST)
++
++#define NOR_TSEQRADX_OFST (0)
++#define NOR_TSEQRADX_MASK (0xFF)
++#define NOR_TSEQRADX(x)  (((x) & NOR_TSEQRADX_MASK) << NOR_TSEQRADX_OFST)
++
++/* TIM1 GPCM */
++#define GPCM_TACOX_OFST (12)
++#define GPCM_TACOX_MASK (0xFF)
++#define GPCM_TACOX(x) (((x) & GPCM_TACOX_MASK) << GPCM_TACOX_OFST)
++
++#define GPCM_TAADX_OFST (6)
++#define GPCM_TAADX_MASK (0x3F)
++#define GPCM_TAADX(x) (((x) & GPCM_TAADX_MASK) << GPCM_TAADX_OFST)
++
++#define GPCM_TRADX_OFST (0)
++#define GPCM_TRADX_MASK (0x3F)
++#define GPCM_TRADX(x) (((x) & GPCM_TRADX_MASK) << GPCM_TRADX_OFST)
++
++/* param 4, TIM2 */
++/* TIM2 NOR */
++#define NOR_TCSX_OFST (18)
++#define NOR_TCSX_MASK (0xF)
++#define NOR_TCSX(x) (((x) & NOR_TCSX_MASK) << NOR_TCSX_OFST)
++
++#define NOR_TCHX_OFST (14)
++#define NOR_TCHX_MASK (0xF)
++#define NOR_TCHX(x) (((x) & NOR_TCHX_MASK) << NOR_TCHX_OFST)
++
++#define NOR_TWPHX_OFST (8)
++#define NOR_TWPHX_MASK (0x3F)
++#define NOR_TWPHX(x)  (((x) & NOR_TWPHX_MASK) << NOR_TWPHX_OFST)
++
++#define NOR_TWPX_OFST (0)
++#define NOR_TWPX_MASK (0xFF)
++#define NOR_TWPX(x) (((x) & NOR_TWPX_MASK) << NOR_TWPX_OFST)
++
++/* TIM2 GPCM */
++#define GPCM_TCSX_OFST (12)
++#define GPCM_TCSX_MASK (0xF)
++#define GPCM_TCSX(x) (((x) & GPCM_TCSX_MASK) << GPCM_TCSX_OFST)
++
++#define GPCM_TCHX_OFST (8)
++#define GPCM_TCHX_MASK (0xF)
++#define GPCM_TCHX(x) (((x) & GPCM_TCSX_MASK) << GPCM_TCHX_OFST)
++
++#define GPCM_TWPX_OFST (0)
++#define GPCM_TWPX_MASK (0xFF)
++#define GPCM_TWPX(x) (((x) & GPCM_TWPX_MASK) << GPCM_TWPX_OFST)
++
++
++#endif
