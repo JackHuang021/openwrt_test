@@ -1,3 +1,71 @@
+From d2a8144df362c40d100f454aa5e84241c1dd9b36 Mon Sep 17 00:00:00 2001
+From: Huangjie <huangjie1663@phytium.com.cn>
+Date: Wed, 1 Nov 2023 10:34:55 +0800
+Subject: [PATCH 1/2] pe220x: add phytium pe220x dts file
+
+Signed-off-by: Huangjie <huangjie1663@phytium.com.cn>
+---
+ arch/arm64/boot/dts/Makefile                  |    1 +
+ arch/arm64/boot/dts/phytium/Makefile          |   32 +
+ .../dts/phytium/e2000d-chillipi-edu-board.dts |  339 ++++++
+ .../boot/dts/phytium/e2000d-demo-board.dts    |  269 +++++
+ .../boot/dts/phytium/e2000d-miniitx-board.dts |  296 +++++
+ .../boot/dts/phytium/e2000d-power-board.dts   |  243 ++++
+ .../boot/dts/phytium/e2000d-test-a-board.dts  |  176 +++
+ .../boot/dts/phytium/e2000d-test-b-board.dts  |  209 ++++
+ .../boot/dts/phytium/e2000d-test-c-board.dts  |  240 ++++
+ .../boot/dts/phytium/e2000q-come-board.dts    |  268 +++++
+ .../boot/dts/phytium/e2000q-demo-board.dts    |  277 +++++
+ .../boot/dts/phytium/e2000q-edu-board.dts     |  347 ++++++
+ .../boot/dts/phytium/e2000q-hanwei-board.dts  |  218 ++++
+ .../boot/dts/phytium/e2000q-miniitx-board.dts |  332 ++++++
+ .../boot/dts/phytium/e2000q-test-a-board.dts  |  168 +++
+ .../boot/dts/phytium/e2000q-test-b-board.dts  |  213 ++++
+ .../boot/dts/phytium/e2000q-test-c-board.dts  |  210 ++++
+ .../boot/dts/phytium/e2000q-vpx-board.dts     |  325 ++++++
+ .../boot/dts/phytium/e2000s-demo-board.dts    |  100 ++
+ .../boot/dts/phytium/e2000s-test-a-board.dts  |  149 +++
+ .../boot/dts/phytium/e2000s-test-b-board.dts  |  141 +++
+ .../boot/dts/phytium/e2000s-test-c-board.dts  |  220 ++++
+ arch/arm64/boot/dts/phytium/pe2201.dtsi       |  284 +++++
+ arch/arm64/boot/dts/phytium/pe2202.dtsi       |  185 +++
+ arch/arm64/boot/dts/phytium/pe2204.dtsi       |  223 ++++
+ arch/arm64/boot/dts/phytium/pe220x.dtsi       | 1017 +++++++++++++++++
+ .../boot/dts/phytium/phytiumpi_firefly.dts    |  320 ++++++
+ .../dts/phytium/ps2316-devboard-16c-dsk.dts   |   99 ++
+ .../dts/phytium/ps2316-generic-psci-soc.dtsi  |  583 ++++++++++
+ include/dt-bindings/bus/phytium-local-bus.h   |  104 ++
+ 30 files changed, 7588 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/phytium/Makefile
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000d-chillipi-edu-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000d-demo-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000d-miniitx-board.dts
+ create mode 100755 arch/arm64/boot/dts/phytium/e2000d-power-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000d-test-a-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000d-test-b-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000d-test-c-board.dts
+ create mode 100755 arch/arm64/boot/dts/phytium/e2000q-come-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000q-demo-board.dts
+ create mode 100755 arch/arm64/boot/dts/phytium/e2000q-edu-board.dts
+ create mode 100755 arch/arm64/boot/dts/phytium/e2000q-hanwei-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000q-miniitx-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000q-test-a-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000q-test-b-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000q-test-c-board.dts
+ create mode 100755 arch/arm64/boot/dts/phytium/e2000q-vpx-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000s-demo-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000s-test-a-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000s-test-b-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/e2000s-test-c-board.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/pe2201.dtsi
+ create mode 100644 arch/arm64/boot/dts/phytium/pe2202.dtsi
+ create mode 100644 arch/arm64/boot/dts/phytium/pe2204.dtsi
+ create mode 100644 arch/arm64/boot/dts/phytium/pe220x.dtsi
+ create mode 100644 arch/arm64/boot/dts/phytium/phytiumpi_firefly.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/ps2316-devboard-16c-dsk.dts
+ create mode 100644 arch/arm64/boot/dts/phytium/ps2316-generic-psci-soc.dtsi
+ create mode 100755 include/dt-bindings/bus/phytium-local-bus.h
+
 diff --git a/arch/arm64/boot/dts/Makefile b/arch/arm64/boot/dts/Makefile
 index 9b1170658..2900f07a2 100644
 --- a/arch/arm64/boot/dts/Makefile
@@ -7771,3 +7839,6 @@ index 000000000..e8e7a27be
 +
 +
 +#endif
+-- 
+2.34.1
+
