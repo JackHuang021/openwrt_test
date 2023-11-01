@@ -1,7 +1,7 @@
 From d2a8144df362c40d100f454aa5e84241c1dd9b36 Mon Sep 17 00:00:00 2001
 From: Huangjie <huangjie1663@phytium.com.cn>
 Date: Wed, 1 Nov 2023 10:34:55 +0800
-Subject: [PATCH 1/4] pe220x: add phytium pe220x dts file
+Subject: [PATCH 1/5] pe220x: add phytium pe220x dts file
 
 Signed-off-by: Huangjie <huangjie1663@phytium.com.cn>
 ---

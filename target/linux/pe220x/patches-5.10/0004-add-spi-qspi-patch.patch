@@ -1,7 +1,7 @@
 From 79bd86c0581e851d2436adf68c3f5cac82518011 Mon Sep 17 00:00:00 2001
 From: Huangjie <huangjie1663@phytium.com.cn>
 Date: Wed, 1 Nov 2023 15:33:13 +0800
-Subject: [PATCH 4/4] add spi & qspi patch
+Subject: [PATCH 4/5] add spi & qspi patch
 
 Signed-off-by: Huangjie <huangjie1663@phytium.com.cn>
 ---
