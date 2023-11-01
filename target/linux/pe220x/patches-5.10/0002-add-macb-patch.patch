@@ -1,15 +1,16 @@
-From e6ebcf0bc5dd4830c18de1543ee732ee55faa85e Mon Sep 17 00:00:00 2001
+From 5ada169fb7fdfc081db0a8ea435378ae52e8f586 Mon Sep 17 00:00:00 2001
 From: Huangjie <huangjie1663@phytium.com.cn>
-Date: Wed, 1 Nov 2023 11:07:24 +0800
-Subject: [PATCH 2/2] add macb patch
+Date: Wed, 1 Nov 2023 11:18:19 +0800
+Subject: [PATCH 2/4] add macb patch
 
 Signed-off-by: Huangjie <huangjie1663@phytium.com.cn>
 ---
  drivers/net/ethernet/cadence/macb.h      |  93 ++++
  drivers/net/ethernet/cadence/macb_main.c | 623 ++++++++++++++++++++++-
  drivers/net/phy/phylink.c                |   3 +
- include/linux/phy.h                      |   4 +
- 4 files changed, 707 insertions(+), 16 deletions(-)
+ include/linux/phy.h                      |   6 +-
+ 4 files changed, 708 insertions(+), 17 deletions(-)
+ mode change 100644 => 100755 include/linux/phy.h
 
 diff --git a/drivers/net/ethernet/cadence/macb.h b/drivers/net/ethernet/cadence/macb.h
 index 5de47f6fd..5b86336fe 100644
@@ -1136,7 +1137,9 @@ index 57b1b1385..408248607 100644
  		case PHY_INTERFACE_MODE_10GKR:
  		case PHY_INTERFACE_MODE_10GBASER:
 diff --git a/include/linux/phy.h b/include/linux/phy.h
-index 08725a262..f79cbd96a 100644
+old mode 100644
+new mode 100755
+index 08725a262..0336cb22b
 --- a/include/linux/phy.h
 +++ b/include/linux/phy.h
 @@ -106,6 +106,7 @@ extern const int phy_10gbit_features_array[1];
@@ -1164,6 +1167,15 @@ index 08725a262..f79cbd96a 100644
  	case PHY_INTERFACE_MODE_RXAUI:
  		return "rxaui";
  	case PHY_INTERFACE_MODE_XAUI:
+@@ -545,7 +549,7 @@ struct phy_device {
+ 	struct phy_driver *drv;
+ 
+ 	u32 phy_id;
+-
++	u32 force_mode;
+ 	struct phy_c45_device_ids c45_ids;
+ 	unsigned is_c45:1;
+ 	unsigned is_internal:1;
 -- 
 2.34.1
 
