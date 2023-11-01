@@ -49,7 +49,7 @@ include $(INCLUDE_DIR)/image.mk
 define Device/Default
   PROFILES := Default
   KERNEL := Image
-  # DEVICE_DTS = phytium/e2000d-demo-board
+  DEVICE_DTS = phytium/e2000d-demo-board
 endef
 
 include $(SUBTARGET).mk
