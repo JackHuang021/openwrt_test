@@ -1,7 +1,7 @@
 From 99a77dd7d2404a5566f234989703aafba9d0cef0 Mon Sep 17 00:00:00 2001
 From: Huangjie <huangjie1663@phytium.com.cn>
 Date: Wed, 1 Nov 2023 14:36:59 +0800
-Subject: [PATCH 3/5] add phytium usb patch
+Subject: [PATCH 3/6] add phytium usb patch
 
 Signed-off-by: Huangjie <huangjie1663@phytium.com.cn>
 ---

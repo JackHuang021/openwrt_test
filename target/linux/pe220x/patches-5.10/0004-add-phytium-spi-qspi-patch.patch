@@ -1,21 +1,20 @@
-From 79bd86c0581e851d2436adf68c3f5cac82518011 Mon Sep 17 00:00:00 2001
+From 8c2cff4e8ae728d161d57c64c7f9259e66f978a7 Mon Sep 17 00:00:00 2001
 From: Huangjie <huangjie1663@phytium.com.cn>
-Date: Wed, 1 Nov 2023 15:33:13 +0800
-Subject: [PATCH 4/5] add spi & qspi patch
+Date: Wed, 1 Nov 2023 16:32:27 +0800
+Subject: [PATCH 4/6] add phytium spi & qspi patch
 
 Signed-off-by: Huangjie <huangjie1663@phytium.com.cn>
 ---
- arch/arm64/Kconfig.platforms            |   5 +
- arch/arm64/boot/dts/phytium/pe220x.dtsi |   5 +-
- drivers/spi/Kconfig                     |  38 ++
- drivers/spi/Makefile                    |   5 +
- drivers/spi/spi-phytium-dma.c           | 555 +++++++++++++++++
- drivers/spi/spi-phytium-pci.c           | 122 ++++
- drivers/spi/spi-phytium-plat.c          | 204 +++++++
- drivers/spi/spi-phytium-qspi.c          | 756 ++++++++++++++++++++++++
- drivers/spi/spi-phytium.c               | 510 ++++++++++++++++
- drivers/spi/spi-phytium.h               | 213 +++++++
- 10 files changed, 2411 insertions(+), 2 deletions(-)
+ arch/arm64/Kconfig.platforms   |   5 +
+ drivers/spi/Kconfig            |  38 ++
+ drivers/spi/Makefile           |   5 +
+ drivers/spi/spi-phytium-dma.c  | 555 ++++++++++++++++++++++++
+ drivers/spi/spi-phytium-pci.c  | 122 ++++++
+ drivers/spi/spi-phytium-plat.c | 204 +++++++++
+ drivers/spi/spi-phytium-qspi.c | 756 +++++++++++++++++++++++++++++++++
+ drivers/spi/spi-phytium.c      | 510 ++++++++++++++++++++++
+ drivers/spi/spi-phytium.h      | 213 ++++++++++
+ 9 files changed, 2408 insertions(+)
  create mode 100644 drivers/spi/spi-phytium-dma.c
  create mode 100644 drivers/spi/spi-phytium-pci.c
  create mode 100644 drivers/spi/spi-phytium-plat.c
@@ -37,30 +36,6 @@ index 889e78f40..62c2ebbd1 100644
 +      This enables support for Phytium ARMv8 SoC family.
 +
  endmenu
-diff --git a/arch/arm64/boot/dts/phytium/pe220x.dtsi b/arch/arm64/boot/dts/phytium/pe220x.dtsi
-index 6b4cbad68..f4294416d 100644
---- a/arch/arm64/boot/dts/phytium/pe220x.dtsi
-+++ b/arch/arm64/boot/dts/phytium/pe220x.dtsi
-@@ -241,16 +241,17 @@ lbc: lbc@28007000 {
- 		};
- 
- 		qspi0: spi@28008000 {
--			compatible = "phytium,qspi";
-+			compatible = "phytium,qspi-nor";
- 			reg = <0x0 0x28008000 0x0     0x1000>,
- 			      <0x0        0x0 0x0 0x0fffffff>;
- 			reg-names = "qspi", "qspi_mm";
--			clocks = <&sysclk_50mhz>;
-+			clocks = <&sysclk_300mhz>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			status = "disabled";
- 
- 			flash@0 { /* Note: By default, chip select 0 is for BIOS, so be careful when enabling this node!!! */
-+				compatible = "jedec,spi-nor";
- 				reg = <0>;
- 				spi-rx-bus-width = <1>;
- 				spi-max-frequency = <50000000>;
 diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
 index 4d98ce757..a4f09c46f 100644
 --- a/drivers/spi/Kconfig
